@@ -17,6 +17,7 @@ public class MuPDFReflowView extends WebView implements MuPDFView {
 	private final Handler mHandler;
 	private final Point mParentSize;
 	private int mPage;
+	private float mScale;
 	private int mContentHeight;
 	AsyncTask<Void,Void,byte[]> mLoadHTML;
 
@@ -25,6 +26,7 @@ public class MuPDFReflowView extends WebView implements MuPDFView {
 		mHandler = new Handler();
 		mCore = core;
 		mParentSize = parentSize;
+		mScale = 1.0f;
 		mContentHeight = parentSize.y;
 		getSettings().setJavaScriptEnabled(true);
 		addJavascriptInterface(new Object(){
@@ -40,7 +42,7 @@ public class MuPDFReflowView extends WebView implements MuPDFView {
 		setWebViewClient(new WebViewClient() {
 			@Override
 			public void onPageFinished(WebView view, String url) {
-				requestHeight();
+				setScale(mScale);
 			}
 		});
 	}
@@ -75,7 +77,8 @@ public class MuPDFReflowView extends WebView implements MuPDFView {
 	}
 
 	public void setScale(float scale) {
-		loadUrl("javascript:document.getElementById('content').style.zoom=\""+(int)(scale*100)+"%\"");
+		mScale = scale;
+		loadUrl("javascript:document.getElementById('content').style.zoom=\""+(int)(mScale*100)+"%\"");
 		requestHeight();
 	}
 
@@ -135,7 +138,7 @@ public class MuPDFReflowView extends WebView implements MuPDFView {
 	public void update() {
 	}
 
-	public void addHq(boolean update) {
+	public void updateHq(boolean update) {
 	}
 
 	public void removeHq() {
@@ -146,6 +149,9 @@ public class MuPDFReflowView extends WebView implements MuPDFView {
 			mLoadHTML.cancel(true);
 			mLoadHTML = null;
 		}
+	}
+
+	public void releaseBitmaps() {
 	}
 
 	@Override

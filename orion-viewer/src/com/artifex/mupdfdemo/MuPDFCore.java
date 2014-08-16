@@ -58,6 +58,9 @@ public class MuPDFCore
 	private native void setFocusedWidgetChoiceSelectedInternal(String [] selected);
 	private native String [] getFocusedWidgetChoiceSelected();
 	private native String [] getFocusedWidgetChoiceOptions();
+	private native int getFocusedWidgetSignatureState();
+	private native String checkFocusedSignatureInternal();
+	private native boolean signFocusedSignatureInternal(String keyFile, String password);
 	private native int setFocusedWidgetTextInternal(String text);
 	private native String getFocusedWidgetTextInternal();
 	private native int getFocusedWidgetTypeInternal();
@@ -76,7 +79,7 @@ public class MuPDFCore
 	private native boolean hasChangesInternal();
 	private native void saveInternal();
 
-	public static native boolean javascriptSupported();
+	public native boolean javascriptSupported();
 
 	public MuPDFCore(String filename) throws Exception
 	{
@@ -174,21 +177,11 @@ public class MuPDFCore
 		return bm;
 	}
 
-	public synchronized Bitmap updatePage(BitmapHolder h, int page,
+	public synchronized void updatePage(Bitmap bm, int page,
 			int pageW, int pageH,
 			int patchX, int patchY,
 			int patchW, int patchH) {
-		Bitmap bm = null;
-		Bitmap old_bm = h.getBm();
-
-		if (old_bm == null)
-			return null;
-
-		bm = old_bm.copy(Bitmap.Config.ARGB_8888, false);
-		old_bm = null;
-
 		updatePageInternal(bm, page, pageW, pageH, patchX, patchY, patchW, patchH);
-		return bm;
 	}
 
 //	public synchronized PassClickResult passClickEvent(int page, float x, float y) {
@@ -201,6 +194,8 @@ public class MuPDFCore
 //		case LISTBOX:
 //		case COMBOBOX:
 //			return new PassClickResultChoice(changed, getFocusedWidgetChoiceOptions(), getFocusedWidgetChoiceSelected());
+//		case SIGNATURE:
+//			return new PassClickResultSignature(changed, getFocusedWidgetSignatureState());
 //		default:
 //			return new PassClickResult(changed);
 //		}
@@ -217,6 +212,14 @@ public class MuPDFCore
 
 	public synchronized void setFocusedWidgetChoiceSelected(String [] selected) {
 		setFocusedWidgetChoiceSelectedInternal(selected);
+	}
+
+	public synchronized String checkFocusedSignature() {
+		return checkFocusedSignatureInternal();
+	}
+
+	public synchronized boolean signFocusedSignature(String keyFile, String password) {
+		return signFocusedSignatureInternal(keyFile, password);
 	}
 
 	public synchronized LinkInfo [] getPageLinks(int page) {
@@ -245,26 +248,11 @@ public class MuPDFCore
         gotoPage(page);
         TextChar[][][][] chars = text();
 
-        // The text of the page held in a hierarchy (blocks, lines, spans).
-        // Currently we don't need to distinguish the blocks level or
-        // the spans, and we need to collect the text into words.
+		// The text of the page held in a hierarchy (blocks, lines, spans).
+		// Currently we don't need to distinguish the blocks level or
+		// the spans, and we need to collect the text into words.
         ArrayList<TextWord[]> lns = new ArrayList<TextWord[]>();
 
-        for (TextChar[][][] bl: chars) {
-                    if (bl != null) {
-                        for (TextChar[][] ln: bl) {
-                            if (ln != null) {
-                                for (TextChar[] sp: ln) {
-                                    for (TextChar tc: sp) {
-                                        System.out.print(tc.c);
-                                }
-                                    System.out.println("");
-                            }
-                        }
-
-                    }
-                }
-        }
 
         for (TextChar[][][] bl: chars) {
             if (bl != null) {
@@ -307,7 +295,7 @@ public class MuPDFCore
             }
         }
 
-        StringBuffer res = new StringBuffer();
+        StringBuilder res = new StringBuilder();
         for (int i = 0; i < lns.size(); i++) {
             TextWord[] textWords = lns.get(i);
             for (int j = 0; j < textWords.length; j++) {
@@ -322,7 +310,7 @@ public class MuPDFCore
             }
         }
         return res.toString();
-    }
+	}
 
 	public synchronized void addMarkupAnnotation(int page, PointF[] quadPoints, Annotation.Type type) {
 		gotoPage(page);

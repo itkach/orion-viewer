@@ -26,9 +26,10 @@ ifdef NDK_PROFILER
 # Accordingly, we need to build as debug - but this turns optimisations
 # off, which is less than ideal.
 APP_OPTIM := debug
-APP_CFLAGS := -O2
+APP_CFLAGS := -O2 -Wno-error=format-security
 else
 APP_OPTIM := release
+APP_CFLAGS := -Wno-error=format-security
 endif
 ifdef V8_BUILD
 APP_STL := stlport_static
