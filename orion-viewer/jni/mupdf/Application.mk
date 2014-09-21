@@ -29,7 +29,7 @@ APP_OPTIM := debug
 APP_CFLAGS := -O2 -Wno-error=format-security
 else
 APP_OPTIM := release
-APP_CFLAGS := -Wno-error=format-security
+APP_CFLAGS := -Wno-error=format-security -DNOCJK
 endif
 ifdef V8_BUILD
 APP_STL := stlport_static
