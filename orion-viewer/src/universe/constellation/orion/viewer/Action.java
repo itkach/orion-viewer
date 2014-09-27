@@ -189,7 +189,13 @@ public enum Action {
 
     SELECT_TEXT (R.string.action_select_text, R.integer.action_select_text) {
         public void doAction(Controller controller, OrionViewerActivity activity, Object parameter) {
-            activity.textSelectionMode();
+            activity.textSelectionMode(false);
+        }
+    },
+
+    SELECT_WORD_AND_TRANSLATE (R.string.action_select_word, R.integer.action_select_word) {
+        public void doAction(Controller controller, OrionViewerActivity activity, Object parameter) {
+            activity.textSelectionMode(true);
         }
     },
 

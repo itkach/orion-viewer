@@ -4,8 +4,9 @@ import android.app.Dialog;
 import android.graphics.Rect;
 import android.view.Gravity;
 import android.view.WindowManager;
-import universe.constellation.orion.viewer.view.OrionDrawScene;
+
 import universe.constellation.orion.viewer.OrionViewerActivity;
+import universe.constellation.orion.viewer.view.OrionDrawScene;
 
 /**
  * User: mike
@@ -25,7 +26,6 @@ public class DialogOverView {
 
         dialog = new Dialog(activity, style);
         dialog.setContentView(layoutId);
-
     }
 
     protected void initDialogSize() {

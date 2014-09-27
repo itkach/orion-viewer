@@ -966,24 +966,7 @@ public class OrionViewerActivity extends OrionBaseActivity {
 
         getView().setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                if (!selectionMode) {
-                    return touchListener.onTouch(event);
-                } else {
-                    boolean result = textSelection.onTouch(event);
-                    if (textSelection.isSuccessful()) {
-                        selectionMode = false;
-                        String text = controller.selectText(textSelection.getStartX(), textSelection.getStartY(), textSelection.getWidth(), textSelection.getHeight());
-                        if (text != null) {
-                            if (selectedTextActions == null) {
-                                selectedTextActions = new SelectedTextActions(OrionViewerActivity.this);
-                            }
-                            selectedTextActions.show(text);
-                        } else {
-
-                        }
-                    }
-                    return result;
-                }
+                return touchListener.onTouch(event);
             }
         });
 
@@ -1229,12 +1212,12 @@ public class OrionViewerActivity extends OrionBaseActivity {
     }
 
 
-    public void textSelectionMode() {
+    public void textSelectionMode(boolean isSingleWord) {
         //selectionMode = true;
         if (textSelection == null) {
             textSelection = new SelectionAutomata(this);
         }
-        textSelection.startSelection();
+        textSelection.startSelection(isSingleWord);
     }
 
     public class MyArrayAdapter extends ArrayAdapter implements SpinnerAdapter {

@@ -268,10 +268,10 @@ public class MuPDFCore
                                 } else if (wd.textLength() > 0) {
                                     float square = wd.width() * wd.height() / 5;
                                     if (wd.setIntersect(wd, region)) {
-                                        if (wd.width() * wd.height() > square) {
+                                        //if (wd.width() * wd.height() > square) {
                                             wds.add(wd);
-                                            System.out.println(wd.getText());
-                                        }
+                                            //System.out.println(wd.getText());
+                                        //}
                                     }
                                     wd = new TextWord();
                                 }

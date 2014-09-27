@@ -374,17 +374,19 @@ public class Controller implements ViewDimensionAware {
         return screenOrientation;
     }
 
-    public String selectText(int startX, int startY, int widht, int height) {
+    public String selectText(int startX, int startY, int width, int height) {
         Point leftTopCorner = layout.convertToPoint(layoutInfo);
-        if (widht < 0) {
-            startX += widht;
-            widht = -widht;
+        if (width < 0) {
+            startX += width;
+            width = -width;
         }
         if (height < 0) {
             startY += height;
             height = - height;
         }
-        String text = doc.getText(layoutInfo.pageNumber, (int) ((leftTopCorner.x + startX) / layoutInfo.docZoom), (int) ((leftTopCorner.y +startY) / layoutInfo.docZoom), (int) (widht / layoutInfo.docZoom), (int) (height / layoutInfo.docZoom));
+
+        Common.d("Extract area: " + startX + " " +  startY + " " + width + " " + height);
+        String text = doc.getText(layoutInfo.pageNumber, (int) ((leftTopCorner.x + startX) / layoutInfo.docZoom), (int) ((leftTopCorner.y +startY) / layoutInfo.docZoom), (int) (width / layoutInfo.docZoom), (int) (height / layoutInfo.docZoom));
         if (text != null) {
             text = text.trim();
         }

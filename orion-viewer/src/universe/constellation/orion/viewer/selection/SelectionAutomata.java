@@ -19,18 +19,26 @@
 
 package universe.constellation.orion.viewer.selection;
 
-import android.view.*;
+import android.view.MotionEvent;
+import android.view.View;
+
+import universe.constellation.orion.viewer.Action;
+import universe.constellation.orion.viewer.Common;
 import universe.constellation.orion.viewer.OrionViewerActivity;
+import universe.constellation.orion.viewer.R;
 import universe.constellation.orion.viewer.dialog.DialogOverView;
+import universe.constellation.orion.viewer.util.DensityUtil;
 
 /**
  * User: mike
  * Date: 11.08.12
  * Time: 14:37
  */
-public class SelectionAutomata extends DialogOverView {
+public class SelectionAutomata extends DialogOverView  {
 
     private enum STATE {START, MOVING, END, CANCELED};
+
+    private final int SINGLE_WORD_AREA;
 
     private STATE state = STATE.CANCELED;
 
@@ -38,11 +46,13 @@ public class SelectionAutomata extends DialogOverView {
 
     private SelectionView selectionView;
 
+    private boolean isSingleWord = false;
+
     public SelectionAutomata(final OrionViewerActivity activity) {
         super(activity, universe.constellation.orion.viewer.R.layout.text_selector, android.R.style.Theme_Translucent_NoTitleBar);
+        SINGLE_WORD_AREA = (int) DensityUtil.calcScreenSize(3, activity);
 
         selectionView = (SelectionView) dialog.findViewById(universe.constellation.orion.viewer.R.id.text_selector);
-
         selectionView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -50,7 +60,6 @@ public class SelectionAutomata extends DialogOverView {
             }
         });
     }
-
 
 
     public boolean onTouch(MotionEvent event) {
@@ -89,16 +98,21 @@ public class SelectionAutomata extends DialogOverView {
         }
 
         if (oldState != state) {
+            Common.d("Old state: " + oldState + " new state: " +state);
             switch (state) {
                 case CANCELED: dialog.dismiss(); break;
 
                 case END:
-                    dialog.dismiss();
-
                     String text = activity.getController().selectText(getStartX(), getStartY(), getWidth(), getHeight());
                     if (text != null && !"".equals(text)) {
-                        new SelectedTextActions(activity).show(text);
+                        if (isSingleWord) {
+                            dialog.dismiss();
+                            Action.DICTIONARY.doAction(activity.getController(), activity, text);
+                        } else {
+                            new SelectedTextActions(activity, dialog).show(text);
+                        }
                     } else {
+                        dialog.dismiss();
                         activity.showFastMessage(universe.constellation.orion.viewer.R.string.warn_no_text_in_selection);
                     }
                     break;
@@ -107,13 +121,14 @@ public class SelectionAutomata extends DialogOverView {
         return result;
     }
 
-    public void startSelection() {
+    public void startSelection(boolean isSingleWord) {
         selectionView.reset();
         initDialogSize();
         dialog.show();
-        String msg = activity.getResources().getString(universe.constellation.orion.viewer.R.string.msg_select_text);
+        String msg = activity.getResources().getString(isSingleWord ? R.string.msg_select_word : R.string.msg_select_text);
         activity.showFastMessage(msg);
         state = STATE.START;
+        this.isSingleWord = isSingleWord;
     }
 
 
@@ -127,19 +142,59 @@ public class SelectionAutomata extends DialogOverView {
     }
 
     public int getStartX() {
-        return startX;
+        return isSingleWord ? startX - SINGLE_WORD_AREA : startX;
     }
 
     public int getStartY() {
-        return startY;
+        return isSingleWord ? startY - SINGLE_WORD_AREA : startY;
     }
 
     public int getWidth() {
-        return width;
+        return isSingleWord ? width + SINGLE_WORD_AREA : width;
     }
 
     public int getHeight() {
-        return height;
+        return isSingleWord ? height + SINGLE_WORD_AREA : height;
     }
+
+//    public class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+//
+//        private int startX, startY, width, height;
+//
+//        public boolean onDown(MotionEvent event) {
+//            startX = (int) event.getX();
+//            startY = (int) event.getY();
+//            width = 0;
+//            height = 0;
+//
+//            selectionView.reset();
+//            return true;
+//        }
+//
+//        @Override
+//        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+//            int endX = (int) e2.getX();
+//            int endY = (int) e2.getY();
+//            width = endX - startX;
+//            height = endY - startY;
+//
+//            selectionView.updateView(Math.min(startX, endX), Math.min(startY, endY), Math.max(startX, endX), Math.max(startY, endY));
+//            return true;
+//        }
+//
+//        @Override
+//        public boolean onSingleTapUp(MotionEvent e) {
+//            dialog.dismiss();
+//
+//            String text = activity.getController().selectText(getStartX(), getStartY(), getWidth(), getHeight());
+//            if (text != null && !"".equals(text)) {
+//                new SelectedTextActions(activity).show(text);
+//            } else {
+//                activity.showFastMessage(universe.constellation.orion.viewer.R.string.warn_no_text_in_selection);
+//            }
+//            return true;
+//        }
+//    }
+
 
 }
