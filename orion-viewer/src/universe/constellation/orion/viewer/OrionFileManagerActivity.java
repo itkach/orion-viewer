@@ -19,6 +19,7 @@
 
 package universe.constellation.orion.viewer;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -33,6 +34,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import universe.constellation.orion.viewer.android.TabListener;
+import universe.constellation.orion.viewer.opds.FeedListFragment;
 import universe.constellation.orion.viewer.prefs.GlobalOptions;
 
 import java.io.File;
@@ -48,7 +50,6 @@ public class OrionFileManagerActivity extends OrionBaseActivity {
     private static final String LAST_FOLDER = "LAST_FOLDER";
 
     public static class FilesListFragment extends ListFragment {
-
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
             ((OrionFileManagerActivity)getActivity()).createFileView(this);
@@ -61,6 +62,7 @@ public class OrionFileManagerActivity extends OrionBaseActivity {
             ((OrionFileManagerActivity)getActivity()).createRecentView(this);
         }
     }
+
 
     private SharedPreferences prefs;
 
@@ -161,12 +163,16 @@ public class OrionFileManagerActivity extends OrionBaseActivity {
 
     protected void openFile(File file) {
         Common.d("Opening new book " + file.getPath());
+        Intent in = createIntentForFile(this, file);
+        startActivity(in);
+    }
 
+    public static Intent createIntentForFile(Context context, File file) {
         Intent in = new Intent(Intent.ACTION_VIEW);
-        in.setClass(getApplicationContext(), OrionViewerActivity.class);
+        in.setClass(context.getApplicationContext(), OrionViewerActivity.class);
         in.setData(Uri.fromFile(file));
         in.addCategory(Intent.CATEGORY_DEFAULT);
-        startActivity(in);
+        return in;
     }
 
 
@@ -187,16 +193,20 @@ public class OrionFileManagerActivity extends OrionBaseActivity {
                             this, "recent", RecentListFragment.class) {
                     });
             actionBar.addTab(tab);
+
+            tab = actionBar.newTab()
+                    .setIcon(R.drawable.opds)
+                    .setTabListener(new TabListener<FeedListFragment>(
+                            this, "opds", FeedListFragment.class) {
+                    });
+            actionBar.addTab(tab);
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        boolean result = super.onCreateOptionsMenu(menu);
-        if (result) {
-            getMenuInflater().inflate(R.menu.file_manager_menu, menu);
-        }
-        return result;
+        getMenuInflater().inflate(R.menu.file_manager_menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {

@@ -236,17 +236,26 @@ public class OrionBaseActivity extends ActionBarActivity {
     }
 
     public void showAlert(String title, String message) {
-        AlertDialog.Builder builder = createThemedAlertBuilder();
-        builder.setTitle(title);
-        builder.setMessage(message);
+        showAlert(title, message, this);
+    }
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
+    public static void showAlert(final String title, final String message, final OrionBaseActivity activity) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog.Builder builder = activity.createThemedAlertBuilder();
+                builder.setTitle(title);
+                builder.setMessage(message);
+
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.create().show();
             }
         });
-
-        builder.create().show();
     }
 
     public void showAlert(int titleId, int messageId) {

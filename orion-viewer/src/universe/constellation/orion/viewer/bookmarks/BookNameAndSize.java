@@ -19,7 +19,7 @@
 
 package universe.constellation.orion.viewer.bookmarks;
 
-import universe.constellation.orion.viewer.OrionBookmarkActivity;
+import universe.constellation.orion.viewer.opds.StringUtils;
 
 /**
 * User: mike
@@ -61,16 +61,7 @@ public class BookNameAndSize implements Comparable<BookNameAndSize> {
     }
 
     public String buityfySize() {
-        if (size < 1024) {
-            return size + "b";
-        }
-        if (size < 1024 * 1024) {
-            return (size / 1024) + "." + (size % 1024)/103 + "Kb";
-        }
-        if (size < 1024 * 1024 * 1024) {
-            return (size / (1024 * 1024)) + "." + (size % (1024 * 1024))/(103*1024) + "Mb";
-        }
-        return size + "b";
+        return StringUtils.buityfySize(size);
     }
 
     @Override
