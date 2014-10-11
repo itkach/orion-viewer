@@ -19,7 +19,7 @@ class SingleThreadRenderer(actvity: OrionViewerActivity, view: OrionImageView, l
                     RenderThread(actvity, view, layout, doc, config, false) {
 
 
-    override fun startRenreder() {
+    override fun startRenderer() {
 
     }
 

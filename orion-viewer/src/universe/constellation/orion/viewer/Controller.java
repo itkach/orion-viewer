@@ -64,7 +64,7 @@ public class Controller implements ViewDimensionAware {
         this.layout = layout;
         this.renderer = renderer;
 
-        renderer.startRenreder();
+        renderer.startRenderer();
 
         listener = new  DocumentViewAdapter() {
             public void viewParametersChanged() {

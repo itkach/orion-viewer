@@ -116,7 +116,7 @@ public class RenderThread extends Thread implements Renderer {
     }
 
     @Override
-    public void startRenreder() {
+    public void startRenderer() {
         start();
     }
 
