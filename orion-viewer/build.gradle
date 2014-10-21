@@ -11,6 +11,7 @@ if (doSigning) {
 dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile project(':tree-view-list-android')
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 android {
@@ -42,6 +43,7 @@ android {
         androidTest.setRoot('tests')
         androidTest.java.srcDirs += 'tests/kotlin'
         androidTest.kotlin.srcDirs += 'tests/kotlin'
+        main.java.srcDirs += 'src/main/kotlin'
     }
 
     buildTypes {
