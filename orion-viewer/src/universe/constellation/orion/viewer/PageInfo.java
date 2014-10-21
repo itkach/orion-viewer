@@ -26,17 +26,15 @@ package universe.constellation.orion.viewer;
  */
 public class PageInfo {
 
-    public PageInfo() {
+    public int width;
 
-    }
+    public int height;
+
+    //for jni propagation
+    public PageInfo() {}
 
     public PageInfo(int width, int height) {
         this.width = width;
         this.height = height;
     }
-
-    public int width;
-
-    public int height;
-
 }
