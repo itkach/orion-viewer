@@ -10,13 +10,15 @@ import android.graphics.Paint;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 
+import org.jetbrains.annotations.NotNull;
+
 import universe.constellation.orion.viewer.L;
 import universe.constellation.orion.viewer.util.DensityUtil;
 
 /**
  * Created by mike on 9/14/14.
  */
-public class ColorStuff {
+public class ColorStuff implements DrawContext {
 
     public final Paint backgroundPaint = new Paint();
 
@@ -56,4 +58,9 @@ public class ColorStuff {
         backgroundPaint.setShader(new BitmapShader(bitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
     }
 
+    @NotNull
+    @Override
+    public Paint getDefaultPaint() {
+        return defaultPaint;
+    }
 }

@@ -271,8 +271,9 @@ public class SearchDialog extends DialogFragment {
         }
 
         @Override
-        public void drawOnCanvas(Canvas canvas, Paint paint, DrawContext drawContext) {
+        public void drawOnCanvas(Canvas canvas, DrawContext drawContext) {
             if (batch != null) {
+                Paint paint = drawContext.getDefaultPaint();
                 List<RectF> rects = batch.rects;
                 int index = 0;
                 int prevAlpgha = paint.getAlpha();
