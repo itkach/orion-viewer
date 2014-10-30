@@ -43,7 +43,8 @@ android {
         androidTest.setRoot('tests')
         androidTest.java.srcDirs += 'tests/kotlin'
         androidTest.kotlin.srcDirs += 'tests/kotlin'
-        main.java.srcDirs += 'src/main/kotlin'
+        main.kotlin.srcDirs += 'kotlin'
+        main.java.srcDirs += 'kotlin'
     }
 
     buildTypes {
