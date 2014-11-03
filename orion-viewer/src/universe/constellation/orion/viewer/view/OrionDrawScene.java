@@ -24,6 +24,8 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.view.View;
 
+import org.jetbrains.annotations.NotNull;
+
 import universe.constellation.orion.viewer.Common;
 import universe.constellation.orion.viewer.LayoutPosition;
 import universe.constellation.orion.viewer.OrionImageView;
@@ -39,7 +41,7 @@ import java.util.concurrent.CountDownLatch;
  * Date: 16.10.11
  * Time: 13:52
  */
-public class OrionDrawScene extends View implements OrionImageView {
+public class OrionDrawScene extends View implements OrionImageView, TaskAccumulator {
 
     public final static int DEFAULT_STATUS_BAR_SIZE = 20;
 
@@ -345,5 +347,20 @@ public class OrionDrawScene extends View implements OrionImageView {
         } else {
             return  "" + value;
         }
+    }
+
+    @Override
+    public void appendTask(@NotNull PageView p) {
+        tasks.add(p);
+    }
+
+    @Override
+    public void removeTask(@NotNull PageView p) {
+        tasks.remove(p);
+    }
+
+    @Override
+    public void update() {
+        invalidate();
     }
 }

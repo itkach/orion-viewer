@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Debug;
 import android.support.v4.internal.view.SupportMenuItem;
+import android.support.v4.view.GestureDetectorCompat;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -64,11 +65,14 @@ import java.io.File;
 
 import universe.constellation.orion.viewer.dialog.SearchDialog;
 import universe.constellation.orion.viewer.dialog.TapHelpDialog;
+import universe.constellation.orion.viewer.view.GestureListener;
 import universe.constellation.orion.viewer.view.OrionDrawScene;
 import universe.constellation.orion.viewer.prefs.GlobalOptions;
 import universe.constellation.orion.viewer.selection.SelectedTextActions;
 import universe.constellation.orion.viewer.selection.SelectionAutomata;
 import universe.constellation.orion.viewer.selection.TouchAutomata;
+import universe.constellation.orion.viewer.view.PageInfoProvider;
+import universe.constellation.orion.viewer.view.ViewPackage;
 
 public class OrionViewerActivity extends OrionBaseActivity {
 
@@ -127,6 +131,9 @@ public class OrionViewerActivity extends OrionBaseActivity {
 
     //new for new devices)
     private TouchAutomata touchListener;
+
+    private GestureListener newGesture;
+    private GestureDetectorCompat newGestureCompat;
 
     private boolean hasActionBar;
 
@@ -270,7 +277,7 @@ public class OrionViewerActivity extends OrionBaseActivity {
 
             doc = FileUtil.openFile(filePath);
 
-            LayoutStrategy layoutStrategy = new SimpleLayoutStrategy(doc, device.getDeviceSize());
+            SimpleLayoutStrategy layoutStrategy = new SimpleLayoutStrategy(new PageInfoProvider(doc), device.getDeviceSize());
 
             RenderThread renderer = new RenderThread(this, view, layoutStrategy, doc);
 
@@ -303,9 +310,13 @@ public class OrionViewerActivity extends OrionBaseActivity {
             lastPageInfo.totalPages = doc.getPageCount();
             device.onNewBook(lastPageInfo, doc);
 
-            askPassword(controller);
+            newGesture = ViewPackage.initNewGesture(this, doc, view, layoutStrategy);
+            newGestureCompat = new GestureDetectorCompat(this, newGesture);
 
+            askPassword(controller);
         } catch (Exception e) {
+            newGesture = null;
+            newGestureCompat = null;
             Common.d(e);
             if (doc != null) {
                 doc.destroy();
@@ -966,7 +977,11 @@ public class OrionViewerActivity extends OrionBaseActivity {
 
         getView().setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                return touchListener.onTouch(event);
+                if (newGestureCompat != null) {
+                    newGestureCompat.onTouchEvent(event);
+                }
+                return true;
+                //return touchListener.onTouch(event);
             }
         });
 

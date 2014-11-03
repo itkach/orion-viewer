@@ -31,7 +31,7 @@ import universe.constellation.orion.viewer.android.touch.AndroidScaleWrapper;
 import universe.constellation.orion.viewer.android.touch.OldAdroidScaleWrapper;
 import universe.constellation.orion.viewer.android.touch.ScaleDetectorWrapper;
 import universe.constellation.orion.viewer.device.EInkDevice;
-import universe.constellation.orion.viewer.util.DensityUtil;
+import universe.constellation.orion.viewer.util.ScreenUtil;
 import universe.constellation.orion.viewer.util.MoveUtil;
 import universe.constellation.orion.viewer.view.OrionDrawScene;
 
@@ -64,7 +64,7 @@ public class TouchAutomata extends TouchAutomataOldAndroid {
         super(activity, view);
         int sdkVersion = activity.getOrionContext().getSdkVersion();
         gestureDetector = sdkVersion >= 8 ? new AndroidScaleWrapper(activity, this) : new OldAdroidScaleWrapper(activity, this);
-        double edgeSize = DensityUtil.calcScreenSize(40, activity); //40 px * density factor
+        double edgeSize = ScreenUtil.calcScreenSize(40, activity); //40 px * density factor
         MOVE_THRESHOLD = (int) (edgeSize * edgeSize);
 
         enableTouchMove = activity.getGlobalOptions().isEnableTouchMove();

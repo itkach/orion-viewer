@@ -27,7 +27,7 @@ import universe.constellation.orion.viewer.Common;
 import universe.constellation.orion.viewer.OrionViewerActivity;
 import universe.constellation.orion.viewer.R;
 import universe.constellation.orion.viewer.dialog.DialogOverView;
-import universe.constellation.orion.viewer.util.DensityUtil;
+import universe.constellation.orion.viewer.util.ScreenUtil;
 
 /**
  * User: mike
@@ -50,7 +50,7 @@ public class SelectionAutomata extends DialogOverView  {
 
     public SelectionAutomata(final OrionViewerActivity activity) {
         super(activity, universe.constellation.orion.viewer.R.layout.text_selector, android.R.style.Theme_Translucent_NoTitleBar);
-        SINGLE_WORD_AREA = (int) DensityUtil.calcScreenSize(3, activity);
+        SINGLE_WORD_AREA = (int) ScreenUtil.calcScreenSize(3, activity);
 
         selectionView = (SelectionView) dialog.findViewById(universe.constellation.orion.viewer.R.id.text_selector);
         selectionView.setOnTouchListener(new View.OnTouchListener() {

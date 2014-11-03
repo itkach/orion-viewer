@@ -21,6 +21,7 @@ package universe.constellation.orion.viewer;
 
 import android.graphics.Point;
 import universe.constellation.orion.viewer.prefs.GlobalOptions;
+import universe.constellation.orion.viewer.view.PageInfoProvider;
 
 /**
  * User: mike
@@ -37,7 +38,7 @@ public class SimpleLayoutStrategy implements LayoutStrategy {
 
     public int HOR_OVERLAP = 3;
 
-    private DocumentWrapper doc;
+    private PageInfoProvider pageInfoProvider;
 
     private int leftMargin, topMargin, rightMargin, bottomMargin, leftEvenMargin, rightEvenMargin;
 
@@ -51,13 +52,13 @@ public class SimpleLayoutStrategy implements LayoutStrategy {
 
     private int layout;
 
-    public SimpleLayoutStrategy(DocumentWrapper doc, Point deviceSize) {
-        this.doc = doc;
+    public SimpleLayoutStrategy(PageInfoProvider pageInfoProvider, Point deviceSize) {
+        this.pageInfoProvider = pageInfoProvider;
     }
 
     public void nextPage(LayoutPosition info) {
         if (walker.next(info)) {
-            if (info.pageNumber < doc.getPageCount() - 1) {
+            if (info.pageNumber < pageInfoProvider.getPageCount() - 1) {
                 reset(info, info.pageNumber + 1);
             }
         }
@@ -95,20 +96,27 @@ public class SimpleLayoutStrategy implements LayoutStrategy {
     }
 
     public void reset(LayoutPosition info, int pageNum, boolean forward) {
-        if (doc.getPageCount() - 1 < pageNum) {
-            pageNum = doc.getPageCount() - 1;
+
+        if (pageInfoProvider.getPageCount() - 1 < pageNum) {
+            pageNum = pageInfoProvider.getPageCount() - 1;
         }
         if (pageNum < 0) {
             pageNum = 0;
         }
-        info.rotation = rotation;
-
-        info.pageNumber = pageNum;
 
         //original width and height without cropped margins
-        PageInfo pageInfo = doc.getPageInfo(pageNum);
+        PageInfo pageInfo = pageInfoProvider.getPageInfo(pageNum);
 
-        boolean isEvenPage = (pageNum + 1) % 2 == 0;
+        getPageInfo(info, forward, pageInfo);
+    }
+
+    public void getPageInfo(LayoutPosition info, boolean forward, PageInfo pageInfo) {
+        info.rotation = rotation;
+
+        info.pageNumber = pageInfo.pageNum;
+
+
+        boolean isEvenPage = (pageInfo.pageNum + 1) % 2 == 0;
         int leftMargin = enableEvenCrop && isEvenPage ? leftEvenMargin : this.leftMargin;
         int rightMargin = enableEvenCrop && isEvenPage ? rightEvenMargin : this.rightMargin;
 

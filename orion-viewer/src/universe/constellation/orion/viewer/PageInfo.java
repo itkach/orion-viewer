@@ -30,11 +30,16 @@ public class PageInfo {
 
     public int height;
 
-    //for jni propagation
-    public PageInfo() {}
+    public final int pageNum;
 
-    public PageInfo(int width, int height) {
+    //for jni propagation
+    public PageInfo(int pageNum) {
+        this.pageNum = pageNum;
+    }
+
+    public PageInfo(int width, int height, int pageNum) {
         this.width = width;
         this.height = height;
+        this.pageNum = pageNum;
     }
 }

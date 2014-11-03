@@ -13,7 +13,8 @@ import android.graphics.Typeface;
 import org.jetbrains.annotations.NotNull;
 
 import universe.constellation.orion.viewer.L;
-import universe.constellation.orion.viewer.util.DensityUtil;
+import universe.constellation.orion.viewer.geom.Dimension;
+import universe.constellation.orion.viewer.util.ScreenUtil;
 
 /**
  * Created by mike on 9/14/14.
@@ -25,6 +26,8 @@ public class ColorStuff implements DrawContext {
     public final Paint defaultPaint = new Paint();
 
     public final Paint borderPaint = new Paint();
+
+    public final Dimension screenSize;
 
     public ColorStuff(Context context) {
         borderPaint.setColor(Color.BLACK);
@@ -47,7 +50,7 @@ public class ColorStuff implements DrawContext {
 
         Paint p = new Paint();
         p.setColor(Color.rgb(223, 223, 223));
-        int gradsize = 1 << (int)(Math.log(DensityUtil.calcScreenSize(2, context))/Math.log(2) + 0.1);
+        int gradsize = 1 << (int)(Math.log(ScreenUtil.calcScreenSize(2, context))/Math.log(2) + 0.1);
         if (gradsize < 2) {
             gradsize = 2;
         }
@@ -56,11 +59,19 @@ public class ColorStuff implements DrawContext {
         canvas.drawRect(0, 0, dim, dim, p);
 
         backgroundPaint.setShader(new BitmapShader(bitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
+
+        screenSize = ScreenUtil.getScreenSize(context);
     }
 
     @NotNull
     @Override
     public Paint getDefaultPaint() {
         return defaultPaint;
+    }
+
+    @NotNull
+    @Override
+    public Dimension getScreenSize() {
+        return screenSize;
     }
 }
