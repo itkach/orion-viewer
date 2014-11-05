@@ -311,7 +311,7 @@ public class RenderThread extends Thread implements Renderer {
         Point leftTopCorner = layout.convertToPoint(curPos);
 
 
-        doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, width, height, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height);
+        doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height);
 
 //        long startTime = System.currentTimeMillis();
 

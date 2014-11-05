@@ -36,7 +36,7 @@ public interface DocumentWrapper {
 
     PageInfo getPageInfo(int pageNum);
 
-    void renderPage(int pageNumber, Bitmap bitmap, double zoom, int w, int h, int left, int top, int right, int bottom);
+    void renderPage(int pageNumber, Bitmap bitmap, double zoom, int left, int top, int right, int bottom);
 
     String getText(int pageNumber, int absoluteX, int absoluteY, int width, int height);
 

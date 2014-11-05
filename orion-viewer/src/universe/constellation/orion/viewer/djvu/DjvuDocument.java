@@ -66,7 +66,7 @@ public class DjvuDocument implements DocumentWrapper {
         return info;
     }
 
-    public void renderPage(int pageNumber, Bitmap bitmap, double zoom, int w, int h, int left, int top, int right, int bottom) {
+    public void renderPage(int pageNumber, Bitmap bitmap, double zoom, int left, int top, int right, int bottom) {
         gotoPage(pageNumber);
         long start = System.currentTimeMillis();
         drawPage(bitmap, (float) zoom, right - left, bottom - top, left, top, right - left, bottom - top);
