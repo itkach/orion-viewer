@@ -10,6 +10,8 @@ import universe.constellation.orion.viewer.geom.Dimension
 import kotlin.properties.Delegates
 import android.graphics.Rect
 import universe.constellation.orion.viewer.SimpleLayoutStrategy
+import android.os.AsyncTask
+import android.graphics.Bitmap
 
 enum class State {
     UNINITIALIZED
@@ -22,7 +24,7 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
 
     var state : State = State.UNINITIALIZED
 
-    var layoutInfo: LayoutPosition = LayoutPosition()
+    public var layoutInfo: LayoutPosition = LayoutPosition()
 
     public val pageArea: Rect = Rect(0, 0, 0, 0)
         get() {
@@ -75,4 +77,14 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
 
 inline fun Canvas.translate(p: Point) {
     this.translate(p.x.toFloat(), p.y.toFloat())
+}
+
+fun PageView.renderPage() {
+    val p = object : AsyncTask<Int, Int, Bitmap>() {
+
+        override fun doInBackground(vararg params: Int?): Bitmap? {
+            pageListener?.renderPage(this@renderPage)
+            return null;
+        }
+    }
 }

@@ -6,4 +6,6 @@ trait PageViewListener {
     public fun pageLoaded(view: PageView)
 
     public fun sizeChanged(view: PageView)
+
+    public fun renderPage(view: PageView)
 }

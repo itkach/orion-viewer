@@ -79,4 +79,10 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
     override fun sizeChanged(view: PageView) {
         createPage(view.pageNum, view.position)
     }
+
+    override fun renderPage(view: PageView) {
+        val documentWrapper = pageProvider.pageInfoProvider.doc
+        val layoutPosition = view.layoutInfo
+        documentWrapper.renderPage(view.pageNum, layoutPosition.docZoom)
+    }
 }
