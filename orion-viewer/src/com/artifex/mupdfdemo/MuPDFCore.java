@@ -10,6 +10,7 @@ import android.graphics.RectF;
 import universe.constellation.orion.viewer.Common;
 import universe.constellation.orion.viewer.DocInfo;
 import universe.constellation.orion.viewer.PageInfo;
+import universe.constellation.orion.viewer.view.IntBitmap;
 
 import java.util.ArrayList;
 
@@ -38,11 +39,13 @@ public class MuPDFCore
 	private native void gotoPageInternal(int localActionPageNum);
 	private native float getPageWidth();
 	private native float getPageHeight();
-	private native void drawPage(Bitmap bitmap,
+	private native void drawPage(int[] bitmap, int offset,
                                  float zoom,
 			int pageW, int pageH,
 			int patchX, int patchY,
 			int patchW, int patchH);
+
+
 	private native void updatePageInternal(Bitmap bitmap,
 			int page,
 			int pageW, int pageH,
@@ -173,7 +176,7 @@ public class MuPDFCore
 			int patchW, int patchH) {
 		gotoPage(page);
 		Bitmap bm = Bitmap.createBitmap(patchW, patchH, Config.ARGB_8888);
-		drawPage(bm, 1f, pageW, pageH, patchX, patchY, patchW, patchH);
+		//drawPage(bm, 1f, pageW, pageH, patchX, patchY, patchW, patchH);
 		return bm;
 	}
 
@@ -375,11 +378,19 @@ public class MuPDFCore
     }
 
     public synchronized void renderPage(int n, Bitmap bitmap, double zoom, int left, int top, int w, int h) {
-        gotoPage(n);
-        Common.d("MuPDFCore starts rendering...");
-        long start = System.currentTimeMillis();
-        drawPage(bitmap, (float)zoom, w, h, left, top, w, h);
-        Common.d("MuPDFCore render time takes " + n + " = " + 0.001 * (System.currentTimeMillis() - start) + " s");
+//        gotoPage(n);
+//        Common.d("MuPDFCore starts rendering...");
+//        long start = System.currentTimeMillis();
+//        drawPage(bitmap, (float)zoom, w, h, left, top, w, h);
+//        Common.d("MuPDFCore render time takes " + n + " = " + 0.001 * (System.currentTimeMillis() - start) + " s");
     }
+
+	public synchronized void renderPage(int n, IntBitmap bitmap, double zoom, int left, int top, int w, int h) {
+		gotoPage(n);
+		Common.d("MuPDFCore starts rendering...");
+		long start = System.currentTimeMillis();
+		drawPage(bitmap.getArray(), bitmap.getOffset(), (float)zoom, w, h, left, top, w, h);
+		Common.d("MuPDFCore render time takes " + n + " = " + 0.001 * (System.currentTimeMillis() - start) + " s");
+	}
 
 }

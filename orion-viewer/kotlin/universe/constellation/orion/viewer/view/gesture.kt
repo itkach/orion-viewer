@@ -6,6 +6,7 @@ import universe.constellation.orion.viewer.DocumentWrapper
 import universe.constellation.orion.viewer.util.ScreenUtil
 import android.content.Context
 import universe.constellation.orion.viewer.SimpleLayoutStrategy
+import universe.constellation.orion.viewer.RenderThread
 
 /**
  * Created by mike on 11/3/14.
@@ -21,10 +22,10 @@ class GestureListener(val pageProducer: PageViewController) : GestureDetector.Si
     }
 }
 
-fun initNewGesture(c: Context, doc: DocumentWrapper, accumulator: TaskAccumulator, strategy: SimpleLayoutStrategy) : GestureListener {
+fun initNewGesture(c: Context, doc: DocumentWrapper, accumulator: TaskAccumulator, strategy: SimpleLayoutStrategy, renderer: RenderThread) : GestureListener {
     val pageInfoProvider = PageInfoProvider(doc)
     val lazyPageViewProvider = LazyPageViewProvider(ScreenUtil.getScreenSize(c), pageInfoProvider, strategy)
-    val pageProducer = PageViewController(lazyPageViewProvider, accumulator)
+    val pageProducer = PageViewController(lazyPageViewProvider, accumulator, renderer)
     pageProducer.createPage(0)
     return GestureListener(pageProducer)
 }

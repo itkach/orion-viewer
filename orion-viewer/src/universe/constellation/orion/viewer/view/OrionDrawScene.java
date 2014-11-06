@@ -129,7 +129,7 @@ public class OrionDrawScene extends View implements OrionImageView, TaskAccumula
 
         canvas.save();
         canvas.translate(0f, statusBarHeight);
-        if (bitmap != null && !bitmap.isRecycled()) {
+
             long start = System.currentTimeMillis();
             Common.d("OrionView: drawing bitmap on view...");
 
@@ -145,12 +145,12 @@ public class OrionDrawScene extends View implements OrionImageView, TaskAccumula
                 canvas.scale(myScale, myScale);
             }
 
-            stuffTempRect.set(
-                    info.x.getOccupiedAreaStart(),
-                    info.y.getOccupiedAreaStart(),
-                    info.x.getOccupiedAreaEnd(),
-                    info.y.getOccupiedAreaEnd());
-            canvas.drawBitmap(bitmap, stuffTempRect, stuffTempRect, defaultPaint);
+//            stuffTempRect.set(
+//                    info.x.getOccupiedAreaStart(),
+//                    info.y.getOccupiedAreaStart(),
+//                    info.x.getOccupiedAreaEnd(),
+//                    info.y.getOccupiedAreaEnd());
+//            canvas.drawBitmap(bitmap, stuffTempRect, stuffTempRect, defaultPaint);
 
             if (inScaling) {
                 canvas.restore();
@@ -160,9 +160,11 @@ public class OrionDrawScene extends View implements OrionImageView, TaskAccumula
             Common.d("OrionView: bitmap rendering takes " + 0.001f * (System.currentTimeMillis() - start) + " s");
 
             for (DrawTask drawTask : tasks) {
+                Common.d("OrionView: bitmap task " );
                 drawTask.drawOnCanvas(canvas, stuff);
             }
-        }
+            Common.d("OrionView: bitmap task : end" );
+
         canvas.restore();
 
         if (showStatusBar) {
@@ -351,11 +353,13 @@ public class OrionDrawScene extends View implements OrionImageView, TaskAccumula
 
     @Override
     public void appendTask(@NotNull PageView p) {
+        System.out.println("append");
         tasks.add(p);
     }
 
     @Override
     public void removeTask(@NotNull PageView p) {
+        System.out.println("remove");
         tasks.remove(p);
     }
 

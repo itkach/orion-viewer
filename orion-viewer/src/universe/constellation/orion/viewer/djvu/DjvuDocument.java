@@ -29,6 +29,7 @@ import universe.constellation.orion.viewer.Common;
 import universe.constellation.orion.viewer.DocumentWrapper;
 import universe.constellation.orion.viewer.outline.OutlineItem;
 import universe.constellation.orion.viewer.PageInfo;
+import universe.constellation.orion.viewer.view.IntBitmap;
 
 /**
  * User: mike
@@ -69,8 +70,13 @@ public class DjvuDocument implements DocumentWrapper {
     public void renderPage(int pageNumber, Bitmap bitmap, double zoom, int left, int top, int right, int bottom) {
         gotoPage(pageNumber);
         long start = System.currentTimeMillis();
-        drawPage(bitmap, (float) zoom, right - left, bottom - top, left, top, right - left, bottom - top);
+        //drawPage(bitmap, (float) zoom, right - left, bottom - top, left, top, right - left, bottom - top);
         Common.d("Page " + pageNumber + " rendering takes = " + 0.001 * (System.currentTimeMillis() - start) + " s");
+    }
+
+    @Override
+    public void renderPage(int pageNumber, IntBitmap bitmap, double zoom, int left, int top, int right, int bottom) {
+        drawPage(bitmap.getArray(), bitmap.getOffset(), (float) zoom, right - left, bottom - top, left, top, right - left, bottom - top);
     }
 
     public void destroy() {
@@ -96,9 +102,10 @@ public class DjvuDocument implements DocumentWrapper {
 	private static synchronized  native void gotoPageInternal(int localActionPageNum);
 	private static synchronized  native int getPageInfo(int pageNum, PageInfo info);
 
-	public static synchronized  native boolean drawPage(Bitmap birmap, float zoom, int pageW, int pageH,
+	public static synchronized  native boolean drawPage(int [] bitmap, int offset, float zoom, int pageW, int pageH,
 			int patchX, int patchY,
 			int patchW, int patchH);
+
 	public static synchronized  native void destroying();
 
     public String getTitle() {

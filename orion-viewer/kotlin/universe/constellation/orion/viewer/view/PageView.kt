@@ -17,8 +17,11 @@ enum class State {
     UNINITIALIZED
     VISIBLE
     NOT_VISIBLE
+    DESTROYED
 }
 public class PageView(val pageNum: Int, var dim: Dimension, val position: Point, val layoutStrategy: SimpleLayoutStrategy) : DrawTask {
+
+    var bitmap : IntBitmap? = null;
 
     var pageListener: PageViewListener? = null
 
@@ -32,6 +35,8 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
             return $pageArea
         }
 
+    private val stuffTempRect = Rect()
+
     override fun drawOnCanvas(canvas: Canvas,
                               drawContext: DrawContext) {
         canvas.save()
@@ -40,13 +45,18 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
             val paint = drawContext.defaultPaint
             val color = paint.getColor()
             paint.setColor(Color.BLACK)
-            paint.setStyle(Paint.Style.STROKE)
 
-            if (state != State.UNINITIALIZED) {
-                canvas.drawRect(0F, 0F, layoutInfo.x.pageDimension.toFloat(), layoutInfo.y.pageDimension.toFloat(), paint)
-            } else {
-                //canvas.drawText("Loading page xxx" + pageNum, dim.width / 2F, dim.height /2F, paint)
+            if (state == State.VISIBLE) {
+                stuffTempRect.set(0, 0, dim.width, dim.height)
+
+                if (bitmap != null && !bitmap!!.isDead) {
+                    with(bitmap!!) {
+                        canvas.drawBitmap(stuffTempRect, paint)
+                    }
+                }
             }
+
+            paint.setStyle(Paint.Style.STROKE)
             canvas.drawText("Loading page " + pageNum, dim.width / 2F, dim.height /2F, paint)
             canvas.drawRect(0F, 0F, dim.width.toFloat(), dim.height.toFloat(), paint)
             paint.setColor(color)
@@ -69,22 +79,49 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
         layoutStrategy.getPageInfo(layoutInfo, true, newInfo)
         dim.width = layoutInfo.x.pageDimension
         dim.height = layoutInfo.y.pageDimension
-        println("page info updated x " + newInfo.pageNum + dim)
-
+        println("page info updated: " + newInfo.pageNum + " " + dim)
         pageListener?.sizeChanged(this)
+
+        addRenderTask()
     }
+
+    fun updateBitmap(b: IntBitmap) {
+        state = State.VISIBLE
+        bitmap = b
+        pageListener?.pageViewUpdated(this)
+        if (state == State.DESTROYED) {
+            b.destroy()
+        }
+    }
+
+    fun destroy() {
+        bitmap?.destroy()
+        state = State.DESTROYED
+    }
+
 }
 
 inline fun Canvas.translate(p: Point) {
     this.translate(p.x.toFloat(), p.y.toFloat())
 }
 
-fun PageView.renderPage() {
-    val p = object : AsyncTask<Int, Int, Bitmap>() {
+fun PageView.addRenderTask() {
+    println("rendering page " + pageNum)
+    val p = object : AsyncTask<Int, Int, IntBitmap>() {
 
-        override fun doInBackground(vararg params: Int?): Bitmap? {
-            pageListener?.renderPage(this@renderPage)
-            return null;
+        override fun doInBackground(vararg params: Int?): IntBitmap? {
+            return pageListener?.renderPage(this@addRenderTask)
+            println("null listener " + pageNum)
+        }
+
+        override fun onPostExecute(result: IntBitmap?) {
+            if (result != null) {
+                this@addRenderTask.updateBitmap(result)
+            } else {
+                println("error null bitmap " + pageNum)
+            }
         }
     }
+
+    p.execute(1)
 }

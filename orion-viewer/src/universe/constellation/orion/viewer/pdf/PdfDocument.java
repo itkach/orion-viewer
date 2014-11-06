@@ -25,6 +25,7 @@ import com.artifex.mupdfdemo.MuPDFCore;
 import universe.constellation.orion.viewer.DocumentWrapper;
 import universe.constellation.orion.viewer.outline.OutlineItem;
 import universe.constellation.orion.viewer.PageInfo;
+import universe.constellation.orion.viewer.view.IntBitmap;
 
 
 /**
@@ -53,6 +54,11 @@ public class PdfDocument implements DocumentWrapper {
     }
 
     public void renderPage(int pageNumber, Bitmap bitmap, double zoom, int left, int top, int right, int bottom) {
+        core.renderPage(pageNumber, bitmap, zoom, left, top, right - left, bottom - top);
+    }
+
+    @Override
+    public void renderPage(int pageNumber, IntBitmap bitmap, double zoom, int left, int top, int right, int bottom) {
         core.renderPage(pageNumber, bitmap, zoom, left, top, right - left, bottom - top);
     }
 

@@ -310,7 +310,7 @@ public class OrionViewerActivity extends OrionBaseActivity {
             lastPageInfo.totalPages = doc.getPageCount();
             device.onNewBook(lastPageInfo, doc);
 
-            newGesture = ViewPackage.initNewGesture(this, doc, view, layoutStrategy);
+            newGesture = ViewPackage.initNewGesture(this, doc, view, layoutStrategy, renderer);
             newGestureCompat = new GestureDetectorCompat(this, newGesture);
 
             askPassword(controller);

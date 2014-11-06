@@ -633,12 +633,13 @@ static void update_changed_rects(globals *glo, page_cache *pc, pdf_document *ido
 }
 
 JNIEXPORT jboolean JNICALL
-JNI_FN(MuPDFCore_drawPage)(JNIEnv *env, jobject thiz,jobject bitmap,
+JNI_FN(MuPDFCore_drawPage)(JNIEnv *env, jobject thiz,
+		jintArray bitmap, jint arrayOffset,
         float zoom,
 		int pageW, int pageH, int patchX, int patchY, int patchW, int patchH)
 {
 	LOGI("==================Start Rendering==============");
-	AndroidBitmapInfo info;
+	//AndroidBitmapInfo info;
 	void *pixels;
 	int ret;
 	fz_device *dev = NULL;
@@ -662,27 +663,33 @@ JNI_FN(MuPDFCore_drawPage)(JNIEnv *env, jobject thiz,jobject bitmap,
 	fz_var(pix);
 	fz_var(dev);
 
-	LOGI("In native method\n");
-	if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
-		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-		return 0;
-	}
+//	LOGI("In native method\n");
+//	if ((ret = AndroidBitmap_getInfo(env, bitmap, &info)) < 0) {
+//		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+//		return 0;
+//	}
+//
+//	LOGI("Checking format\n");
+//	if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
+//        LOGE("Bitmap format is not RGBA_8888! Format is %i", info.format);
+//		//return 0;
+//	}
+//
+//	LOGI("locking pixels\n");
+//	if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
+//		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+//		return 0;
+//	}
 
-	LOGI("Checking format\n");
-	if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
-        LOGE("Bitmap format is not RGBA_8888! Format is %i", info.format);
-		//return 0;
-	}
-
-	LOGI("locking pixels\n");
-	if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
-		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-		return 0;
-	}
+	jint *cArray = (*env)->GetIntArrayElements(env, bitmap, NULL);
+//	pixels = cArray;
+	pixels = &(((jint *)cArray)[arrayOffset]);
 
 	/* Call mupdf to render display list to screen */
-	LOGI("Rendering page(%d)=%dx%d patch=[%d,%d,%d,%d]",
-			pc->number, pageW, pageH, patchX, patchY, patchW, patchH);
+	LOGI("Rendering page(%d)=%dx%d patch=[%d,%d,%d,%d], offset = %d",
+			pc->number, pageW, pageH, patchX, patchY, patchW, patchH, arrayOffset);
+
+
 
 	fz_try(ctx)
 	{
@@ -723,11 +730,11 @@ JNI_FN(MuPDFCore_drawPage)(JNIEnv *env, jobject thiz,jobject bitmap,
 		bbox.x1 = patchX + patchW;
 		bbox.y1 = patchY + patchH;
 		pixbbox = bbox;
-		pixbbox.x1 = pixbbox.x0 + info.width;
+		//pixbbox.x1 = pixbbox.x0 + info.width;
 		/* pixmaps cannot handle right-edge padding, so the bbox must be expanded to
 		 * match the pixels data */
-		pix = fz_new_pixmap_with_bbox_and_data(ctx, glo->colorspace, &pixbbox, pixels);
-		//pix = fz_new_pixmap_with_bbox_and_data(ctx, glo->colorspace, &bbox, pixels);
+		//pix = fz_new_pixmap_with_bbox_and_data(ctx, glo->colorspace, &pixbbox, pixels);
+		pix = fz_new_pixmap_with_bbox_and_data(ctx, glo->colorspace, &bbox, pixels);
 		if (pc->page_list == NULL && pc->annot_list == NULL)
 		{
 			fz_clear_pixmap_with_value(ctx, pix, 0xd0);
@@ -779,13 +786,14 @@ JNI_FN(MuPDFCore_drawPage)(JNIEnv *env, jobject thiz,jobject bitmap,
 	{
 		fz_free_device(dev);
 		dev = NULL;
+	 	(*env)->ReleaseIntArrayElements(env, bitmap, cArray, JNI_ABORT);
 	}
 	fz_catch(ctx)
 	{
 		LOGE("Render failed");
 	}
 
-	AndroidBitmap_unlockPixels(env, bitmap);
+	//AndroidBitmap_unlockPixels(env, bitmap);
 
 	return 1;
 }
@@ -842,7 +850,7 @@ JNI_FN(MuPDFCore_updatePageInternal)(JNIEnv *env, jobject thiz, jobject bitmap, 
 		/* Without a cached page object we cannot perform a partial update so
 		render the entire bitmap instead */
 		JNI_FN(MuPDFCore_gotoPageInternal)(env, thiz, page);
-		return JNI_FN(MuPDFCore_drawPage)(env, thiz, bitmap, 1.0f/*TODO*/, pageW, pageH, patchX, patchY, patchW, patchH);
+		return JNI_FN(MuPDFCore_drawPage)(env, thiz, NULL, -1, 1.0f/*TODO*/, pageW, pageH, patchX, patchY, patchW, patchH);
 	}
 
 	idoc = pdf_specifics(doc);

@@ -24,6 +24,7 @@ import android.graphics.*;
 import android.os.Debug;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
+import universe.constellation.orion.viewer.view.IntBitmap;
 import universe.constellation.orion.viewer.view.Renderer;
 
 import java.util.Iterator;
@@ -236,10 +237,6 @@ public class RenderThread extends Thread implements Renderer {
             if (resultEntry == null) {
                 //render page
                 resultEntry = render(curPos, rotation);
-
-                synchronized (this) {
-                    cachedBitmaps.add(resultEntry);
-                }
             }
 
 
@@ -274,7 +271,7 @@ public class RenderThread extends Thread implements Renderer {
         return resultEntry.bitmap;
     }
 
-    private CacheInfo render(LayoutPosition curPos, int rotation) {
+    public CacheInfo render(LayoutPosition curPos, int rotation) {
         CacheInfo resultEntry;
         int width = curPos.x.screenDimension;
         int height = curPos.y.screenDimension;
@@ -290,13 +287,14 @@ public class RenderThread extends Thread implements Renderer {
             if (screenWidth == info.bitmap.getWidth() && screenHeight == info.bitmap.getHeight() /*|| rotation != 0 && width == info.bitmap.getHeight() && height == info.bitmap.getWidth()*/) {
                 bitmap = info.bitmap;
             } else {
+                System.out.println("screen width " + screenWidth + " " + screenHeight);
                 info.bitmap.recycle(); //todo recycle from ui
                 info.bitmap = null;
             }
         }
         if (bitmap == null) {
-            Common.d("Creating Bitmap " + bitmapConfig + " " + screenWidth + "x" + screenHeight + "...");
-            bitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+//            Common.d("Creating Bitmap " + bitmapConfig + " " + screenWidth + "x" + screenHeight + "...");
+//            bitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
         } else {
             Common.d("Cached ");
         }
@@ -311,7 +309,7 @@ public class RenderThread extends Thread implements Renderer {
         Point leftTopCorner = layout.convertToPoint(curPos);
 
 
-        doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height);
+        //doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height);
 
 //        long startTime = System.currentTimeMillis();
 
@@ -324,8 +322,21 @@ public class RenderThread extends Thread implements Renderer {
 //        Common.d("Drawing bitmap in cache " + 0.001 * (endTime - startTime) + " s");
 
         resultEntry = new CacheInfo(curPos, bitmap);
+        synchronized (this) {
+            cachedBitmaps.add(resultEntry);
+        }
         return resultEntry;
     }
+
+    public void render2(LayoutPosition curPos, IntBitmap bitmap) {
+        int width = curPos.x.screenDimension;
+        int height = curPos.y.screenDimension;
+        Point leftTopCorner = layout.convertToPoint(curPos);
+
+        //doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height);
+        doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, 0, 0, curPos.x.pageDimension, curPos.y.pageDimension);
+    }
+
 
     @Override
     public void render(LayoutPosition lastInfo) {
@@ -336,15 +347,15 @@ public class RenderThread extends Thread implements Renderer {
         }
     }
 
-    static class CacheInfo {
+    public static class CacheInfo {
+
+        private LayoutPosition info;
+        private Bitmap bitmap;
 
         public CacheInfo(LayoutPosition info, Bitmap bitmap) {
             this.info  = info;
             this.bitmap = bitmap;
         }
-
-        private LayoutPosition info;
-        private Bitmap bitmap;
 
         private boolean valid = true;
 

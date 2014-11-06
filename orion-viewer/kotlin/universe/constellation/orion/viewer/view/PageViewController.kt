@@ -3,12 +3,14 @@ package universe.constellation.orion.viewer.view
 import android.graphics.Rect
 import universe.constellation.orion.viewer.geom.Point
 import android.util.SparseArray
+import universe.constellation.orion.viewer.RenderThread
+import android.graphics.Bitmap
 
 /**
  * Created by mike on 11/3/14.
  */
 
-public class PageViewController(val pageProvider: LazyPageViewProvider, val pageAccumulator: TaskAccumulator) : PageViewListener {
+public class PageViewController(val pageProvider: LazyPageViewProvider, val pageAccumulator: TaskAccumulator, val renderer: RenderThread) : PageViewListener {
 
     var anchor: PageView? = null;
 
@@ -17,6 +19,8 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
     val calcRect: Rect = Rect()
 
     val renderingArea = Rect(0, 0, pageProvider.renderingArea.width, pageProvider.renderingArea.height);
+
+    val bitmapCache = Cache(pageProvider.renderingArea)
 
     fun createPage(pageNum: Int) {
         val pageView = createPage(pageNum, Point(0, 0))
@@ -32,23 +36,49 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
             pageAccumulator.appendTask(pageView)
         } else {
             pageView.relocate(position)
+            if (!pageView.isVisible()) {
+                removePageView(pageView)
+            }
         }
+
+        ensureHasAnchor(pageView)
 
         if (pageView.hasSpaceAfter() && pageView.hasNext()) {
             val rect = pageView.pageArea
             createPage(pageNum + 1, Point(rect.left, rect.bottom + 1))
         }
-
+        println("visible pages " + visiblePages.size())
         return pageView
+    }
+
+    private fun removePageView(p: PageView) {
+        p.destroy()
+        visiblePages.remove(p.pageNum)
+        pageAccumulator.removeTask(p)
+        p.pageListener = null
+    }
+
+    private fun ensureHasAnchor(p: PageView) {
+        if (!(anchor?.isVisible() ?: false)) {
+            println("reseting anchor ${anchor?.pageNum}")
+            anchor = null
+        }
+
+        if (anchor == null && p.isVisible()) {
+            println("Changing anchor to ${p.pageNum}")
+            anchor = p;
+        }
     }
 
     fun translatePages(delta: Int) {
         for (i in 0..visiblePages.size() - 1) {
-            val pageView = visiblePages.get(i)
+            val pageView = visiblePages.valueAt(i)
             pageView.transform(0, delta)
         }
-        //anchor!!.transform(0, delta)
-        createPage(anchor!!.pageNum, anchor!!.position)
+
+        if (anchor != null) {
+            createPage(anchor!!.pageNum, anchor!!.position)
+        }
     }
 
     fun PageView.isVisible(): Boolean {
@@ -72,17 +102,20 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
         return pageNum > 0
     }
 
-    override fun pageLoaded(view: PageView) {
-        createPage(view.pageNum, view.position)
+    override fun pageViewUpdated(view: PageView) {
+        pageAccumulator.update()
     }
 
     override fun sizeChanged(view: PageView) {
         createPage(view.pageNum, view.position)
     }
 
-    override fun renderPage(view: PageView) {
-        val documentWrapper = pageProvider.pageInfoProvider.doc
+    override fun renderPage(view: PageView): IntBitmap {
         val layoutPosition = view.layoutInfo
-        documentWrapper.renderPage(view.pageNum, layoutPosition.docZoom)
+        if (view.bitmap == null) {
+            view.bitmap = bitmapCache.createBitmap(layoutPosition.x.pageDimension, layoutPosition.y.pageDimension)
+        }
+        renderer.render2(layoutPosition, view.bitmap)
+        return view.bitmap!!;
     }
 }
