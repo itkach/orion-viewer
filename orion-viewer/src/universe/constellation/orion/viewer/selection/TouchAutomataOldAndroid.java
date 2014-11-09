@@ -48,6 +48,8 @@ public class TouchAutomataOldAndroid {
 
     protected Point last0 = new Point();
 
+    protected Point prev = new Point();
+
     protected OrionViewerActivity activity;
 
     protected OrionDrawScene view;

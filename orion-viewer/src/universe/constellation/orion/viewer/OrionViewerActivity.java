@@ -33,14 +33,7 @@ import android.support.v4.internal.view.SupportMenuItem;
 import android.support.v4.view.GestureDetectorCompat;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -72,7 +65,6 @@ import universe.constellation.orion.viewer.selection.SelectedTextActions;
 import universe.constellation.orion.viewer.selection.SelectionAutomata;
 import universe.constellation.orion.viewer.selection.TouchAutomata;
 import universe.constellation.orion.viewer.view.PageInfoProvider;
-import universe.constellation.orion.viewer.view.ViewPackage;
 
 public class OrionViewerActivity extends OrionBaseActivity {
 
@@ -309,9 +301,6 @@ public class OrionViewerActivity extends OrionBaseActivity {
 
             lastPageInfo.totalPages = doc.getPageCount();
             device.onNewBook(lastPageInfo, doc);
-
-            newGesture = ViewPackage.initNewGesture(this, doc, view, layoutStrategy, renderer);
-            newGestureCompat = new GestureDetectorCompat(this, newGesture);
 
             askPassword(controller);
         } catch (Exception e) {
@@ -977,11 +966,7 @@ public class OrionViewerActivity extends OrionBaseActivity {
 
         getView().setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                if (newGestureCompat != null) {
-                    newGestureCompat.onTouchEvent(event);
-                }
-                return true;
-                //return touchListener.onTouch(event);
+                return touchListener.onTouch(event);
             }
         });
 

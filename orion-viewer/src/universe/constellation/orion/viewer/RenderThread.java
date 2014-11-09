@@ -234,38 +234,39 @@ public class RenderThread extends Thread implements Renderer {
             }
 
 
-            if (resultEntry == null) {
-                //render page
-                resultEntry = render(curPos, rotation);
-            }
-
-
-            if (flushBitmap) {
-                final Bitmap bitmap = resultEntry.bitmap;
-                Common.d("Sending Bitmap");
-                final CountDownLatch mutex = new CountDownLatch(1);
-
-                final LayoutPosition info = curPos;
-                if (!executeInSeparateThread) {
-                    view.onNewImage(bitmap, info, mutex);
-                    activity.getDevice().flushBitmap();
-                    mutex.countDown();
-                } else {
-                    activity.runOnUiThread(new Runnable() {
-                        public void run() {
-                            view.onNewImage(bitmap, info, mutex);
-                            //view.invalidate();
-                            activity.getDevice().flushBitmap();
-                        }
-                    });
-                }
-
-                try {
-                    mutex.await(1, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    Common.d(e);
-                }
-            }
+            return null;
+//            if (resultEntry == null) {
+//                //render page
+//                resultEntry = render(curPos, rotation);
+//            }
+//
+//
+//            if (flushBitmap) {
+//                final Bitmap bitmap = resultEntry.bitmap;
+//                Common.d("Sending Bitmap");
+//                final CountDownLatch mutex = new CountDownLatch(1);
+//
+//                final LayoutPosition info = curPos;
+//                if (!executeInSeparateThread) {
+//                    view.onNewImage(bitmap, info, mutex);
+//                    activity.getDevice().flushBitmap();
+//                    mutex.countDown();
+//                } else {
+//                    activity.runOnUiThread(new Runnable() {
+//                        public void run() {
+//                            view.onNewImage(bitmap, info, mutex);
+//                            //view.invalidate();
+//                            activity.getDevice().flushBitmap();
+//                        }
+//                    });
+//                }
+//
+//                try {
+//                    mutex.await(1, TimeUnit.SECONDS);
+//                } catch (InterruptedException e) {
+//                    Common.d(e);
+//                }
+//            }
         }
 
         return resultEntry.bitmap;
@@ -333,8 +334,8 @@ public class RenderThread extends Thread implements Renderer {
         int height = curPos.y.screenDimension;
         Point leftTopCorner = layout.convertToPoint(curPos);
 
-        //doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height);
-        doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, 0, 0, curPos.x.pageDimension, curPos.y.pageDimension);
+        doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height);
+        //doc.renderPage(curPos.pageNumber, bitmap, curPos.docZoom, 0, 0, curPos.x.pageDimension, curPos.y.pageDimension);
     }
 
 

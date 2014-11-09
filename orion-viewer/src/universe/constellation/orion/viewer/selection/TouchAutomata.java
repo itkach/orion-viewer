@@ -23,7 +23,6 @@ import android.graphics.Point;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.widget.Toast;
-
 import universe.constellation.orion.viewer.Common;
 import universe.constellation.orion.viewer.Device;
 import universe.constellation.orion.viewer.OrionViewerActivity;
@@ -31,13 +30,11 @@ import universe.constellation.orion.viewer.android.touch.AndroidScaleWrapper;
 import universe.constellation.orion.viewer.android.touch.OldAdroidScaleWrapper;
 import universe.constellation.orion.viewer.android.touch.ScaleDetectorWrapper;
 import universe.constellation.orion.viewer.device.EInkDevice;
-import universe.constellation.orion.viewer.util.ScreenUtil;
 import universe.constellation.orion.viewer.util.MoveUtil;
+import universe.constellation.orion.viewer.util.ScreenUtil;
 import universe.constellation.orion.viewer.view.OrionDrawScene;
 
-import static android.view.MotionEvent.ACTION_DOWN;
-import static android.view.MotionEvent.ACTION_MOVE;
-import static android.view.MotionEvent.ACTION_UP;
+import static android.view.MotionEvent.*;
 
 /**
 * User: mike
@@ -91,6 +88,8 @@ public class TouchAutomata extends TouchAutomataOldAndroid {
 
         int action;
         if (event != null) { //in case of scale
+            prev.x = last0.x;
+            prev.y = last0.y;
             last0.x = (int) event.getX();
             last0.y = (int) event.getY();
             action = event.getAction();
@@ -117,13 +116,10 @@ public class TouchAutomata extends TouchAutomataOldAndroid {
                     nextState = States.PINCH_ZOOM;
                 } else  if (ACTION_MOVE == action || ACTION_UP == action) {
                     if (action == ACTION_UP) {
-                        getView().afterScaling();
-                        activity.getController().translateAndZoom(false, 1f, -last0.x + start0.x, -last0.y + start0.y);
+                        activity.getController().translate(-last0.x + prev.x, -last0.y + prev.y);
                         nextState = States.UNDEFINED;
                     } else {
-                        getView().beforeScaling();
-                        getView().doScale(1f, start0, last0, true);
-                        getView().postInvalidate();
+                        activity.getController().translate(-last0.x + prev.y, -last0.y + prev.y);
                     }
                     processed = true;
                 }

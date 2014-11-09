@@ -42,4 +42,9 @@ public class PageInfo {
         this.height = height;
         this.pageNum = pageNum;
     }
+
+    @Override
+    public String toString() {
+        return "page " + pageNum + ": " + width + "x" + height;
+    }
 }

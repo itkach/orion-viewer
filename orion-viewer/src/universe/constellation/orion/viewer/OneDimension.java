@@ -65,7 +65,7 @@ public class OneDimension implements Cloneable {
 
     @Override
     public String toString() {
-        return "offset = " + offset;
+        return "offset = " + offset + " pageDim = " + pageDimension;
     }
 
     public int getOccupiedAreaStart() {

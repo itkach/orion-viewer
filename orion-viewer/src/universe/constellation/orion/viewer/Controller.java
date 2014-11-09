@@ -24,8 +24,10 @@ import android.graphics.Point;
 import universe.constellation.orion.viewer.outline.OutlineItem;
 import universe.constellation.orion.viewer.prefs.GlobalOptions;
 import universe.constellation.orion.viewer.util.ColorUtil;
+import universe.constellation.orion.viewer.view.PageViewController;
 import universe.constellation.orion.viewer.view.Renderer;
 import universe.constellation.orion.viewer.view.ViewDimensionAware;
+import universe.constellation.orion.viewer.view.ViewPackage;
 
 /**
  * User: mike
@@ -33,6 +35,8 @@ import universe.constellation.orion.viewer.view.ViewDimensionAware;
  * Time: 18:48
  */
 public class Controller implements ViewDimensionAware {
+
+    private final PageViewController pageViewController;
 
     private LayoutPosition layoutInfo;
 
@@ -69,6 +73,7 @@ public class Controller implements ViewDimensionAware {
         listener = new  DocumentViewAdapter() {
             public void viewParametersChanged() {
                 if (Controller.this.activity.isResumed) {
+                    pageViewController.viewParamsChanged();
                     Controller.this.renderer.invalidateCache();
                     drawPage(layoutInfo);
                     hasPendingEvents = false;
@@ -80,6 +85,7 @@ public class Controller implements ViewDimensionAware {
 
         //activity.getOrionContext().getOptions().subscribe(prefListener);
         activity.getSubscriptionManager().addDocListeners(listener);
+        pageViewController = ViewPackage.initNewGesture(activity, doc, activity.getView(), (SimpleLayoutStrategy) layout);
     }
 
     public void drawPage(int page) {
@@ -154,7 +160,12 @@ public class Controller implements ViewDimensionAware {
         layoutInfo.y.offset = (int) (zoomScaling * oldOffsetY + deltaY);
         System.out.println("newZoom  " + layoutInfo.docZoom + "  " + layoutInfo.x.offset + " x " + layoutInfo.y.offset);
 
-        sendViewChangeNotification();
+        pageViewController.translatePages(-(int) deltaY);
+    }
+
+    public void translate(float deltaX, float deltaY) {
+        pageViewController.translatePages(-(int) deltaY);
+        getActivity().getView().invalidate();
     }
 
     public void changeZoom(int zoom) {

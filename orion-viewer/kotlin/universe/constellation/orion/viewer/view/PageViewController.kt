@@ -10,7 +10,8 @@ import android.graphics.Bitmap
  * Created by mike on 11/3/14.
  */
 
-public class PageViewController(val pageProvider: LazyPageViewProvider, val pageAccumulator: TaskAccumulator, val renderer: RenderThread) : PageViewListener {
+public class PageViewController(val pageProvider: LazyPageViewProvider,
+                                val pageAccumulator: TaskAccumulator) : PageViewListener {
 
     var anchor: PageView? = null;
 
@@ -18,9 +19,11 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
 
     val calcRect: Rect = Rect()
 
-    val renderingArea = Rect(0, 0, pageProvider.renderingArea.width, pageProvider.renderingArea.height);
+    val screenArea = Rect(0, 0, pageProvider.renderingArea.width, pageProvider.renderingArea.height);
 
-    val bitmapCache = Cache(pageProvider.renderingArea)
+    val renderingArea = screenArea;
+
+    val bitmapCache = Cache.create(pageProvider.renderingArea)
 
     fun createPage(pageNum: Int) {
         val pageView = createPage(pageNum, Point(0, 0))
@@ -42,6 +45,9 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
         }
 
         ensureHasAnchor(pageView)
+        if (pageView.isVisible()) {
+            pageView.redraw()
+        }
 
         if (pageView.hasSpaceAfter() && pageView.hasNext()) {
             val rect = pageView.pageArea
@@ -49,6 +55,12 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
         }
         println("visible pages " + visiblePages.size())
         return pageView
+    }
+
+    public fun viewParamsChanged() {
+        val pageNum = anchor!!.pageNum
+        forAllPages { recalcPageInfo() }
+        createPage(pageNum)
     }
 
     private fun removePageView(p: PageView) {
@@ -70,10 +82,16 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
         }
     }
 
-    fun translatePages(delta: Int) {
+    inline fun forAllPages(operation: PageView.() -> Unit) {
         for (i in 0..visiblePages.size() - 1) {
             val pageView = visiblePages.valueAt(i)
-            pageView.transform(0, delta)
+            pageView.operation()
+        }
+    }
+
+    fun translatePages(delta: Int) {
+        forAllPages {
+            transform(0, delta)
         }
 
         if (anchor != null) {
@@ -115,7 +133,12 @@ public class PageViewController(val pageProvider: LazyPageViewProvider, val page
         if (view.bitmap == null) {
             view.bitmap = bitmapCache.createBitmap(layoutPosition.x.pageDimension, layoutPosition.y.pageDimension)
         }
-        renderer.render2(layoutPosition, view.bitmap)
+        println("rendering x = ${layoutPosition.x}, y = ${layoutPosition.y}")
+        val curPos = layoutPosition
+        val width = view.bitmap!!.width
+        val height = view.bitmap!!.height
+        val leftTopCorner = pageProvider.layoutStrategy.convertToPoint(curPos)
+        pageProvider.pageInfoProvider.doc.renderPage(curPos.pageNumber, view.bitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height)
         return view.bitmap!!;
     }
 }

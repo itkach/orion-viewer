@@ -114,15 +114,6 @@ public class OrionDrawScene extends View implements OrionImageView, TaskAccumula
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        GlobalOptions options = ((OrionViewerActivity)getContext()).getGlobalOptions();
-//        if (options.isEinkOptimization()) {
-//            if (counter < options.getEinkRefreshAfter()) {
-//                Nook2Util.setGL16Mode((Activity)getContext());
-//            } else {
-//                counter = 0;
-//            }
-//        }
-
         long backgroundStart = System.currentTimeMillis();
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), backgroundPaint);
         Common.d("OrionView: background rendering takes " + 0.001f * (System.currentTimeMillis() - backgroundStart) + " s");
@@ -130,40 +121,33 @@ public class OrionDrawScene extends View implements OrionImageView, TaskAccumula
         canvas.save();
         canvas.translate(0f, statusBarHeight);
 
-            long start = System.currentTimeMillis();
-            Common.d("OrionView: drawing bitmap on view...");
+        long start = System.currentTimeMillis();
+        Common.d("OrionView: drawing bitmap on view...");
 
-            final float myScale = scale;
+        final float myScale = scale;
 
-            if (inScaling) {
-                drawBorder(canvas, myScale, true);
-                Common.d("in scaling");
-                canvas.save();
-                canvas.translate(
-                        -MoveUtil.calcOffset(startFocus.x, endFocus.x, myScale, enableMoveOnPinchZoom),
-                        -MoveUtil.calcOffset(startFocus.y, endFocus.y, myScale, enableMoveOnPinchZoom));
-                canvas.scale(myScale, myScale);
-            }
-
-//            stuffTempRect.set(
-//                    info.x.getOccupiedAreaStart(),
-//                    info.y.getOccupiedAreaStart(),
-//                    info.x.getOccupiedAreaEnd(),
-//                    info.y.getOccupiedAreaEnd());
-//            canvas.drawBitmap(bitmap, stuffTempRect, stuffTempRect, defaultPaint);
-
-            if (inScaling) {
-                canvas.restore();
-                drawBorder(canvas, myScale, false);
-            }
-
-            Common.d("OrionView: bitmap rendering takes " + 0.001f * (System.currentTimeMillis() - start) + " s");
+        if (inScaling) {
+            //drawBorder(canvas, myScale, true);
+            Common.d("in scaling");
+            canvas.save();
+            canvas.translate(
+                    -MoveUtil.calcOffset(startFocus.x, endFocus.x, myScale, enableMoveOnPinchZoom),
+                    -MoveUtil.calcOffset(startFocus.y, endFocus.y, myScale, enableMoveOnPinchZoom));
+            canvas.scale(myScale, myScale);
+        }
 
             for (DrawTask drawTask : tasks) {
                 Common.d("OrionView: bitmap task " );
                 drawTask.drawOnCanvas(canvas, stuff);
             }
             Common.d("OrionView: bitmap task : end" );
+
+        if (inScaling) {
+            canvas.restore();
+            drawBorder(canvas, myScale, false);
+        }
+
+        Common.d("OrionView: bitmap rendering takes " + 0.001f * (System.currentTimeMillis() - start) + " s");
 
         canvas.restore();
 
@@ -295,7 +279,7 @@ public class OrionDrawScene extends View implements OrionImageView, TaskAccumula
     }
 
     public void afterScaling() {
-        this.inScaling = false;
+        //this.inScaling = false;
     }
 
     public boolean isShowStatusBar() {

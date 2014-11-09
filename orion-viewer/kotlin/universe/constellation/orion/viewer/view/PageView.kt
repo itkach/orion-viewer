@@ -15,6 +15,7 @@ import android.graphics.Bitmap
 
 enum class State {
     UNINITIALIZED
+    WITH_PAGE_INFO
     VISIBLE
     NOT_VISIBLE
     DESTROYED
@@ -26,6 +27,8 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
     var pageListener: PageViewListener? = null
 
     var state : State = State.UNINITIALIZED
+
+    var pageInfo : PageInfo? = null
 
     public var layoutInfo: LayoutPosition = LayoutPosition()
 
@@ -46,7 +49,7 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
             val color = paint.getColor()
             paint.setColor(Color.BLACK)
 
-            if (state == State.VISIBLE) {
+            if (state == State.WITH_PAGE_INFO) {
                 stuffTempRect.set(0, 0, dim.width, dim.height)
 
                 if (bitmap != null && !bitmap!!.isDead) {
@@ -74,19 +77,36 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
         position.y  = p.y
     }
 
-    public fun updatePageInfo(newInfo: PageInfo) {
-        state = State.NOT_VISIBLE
+    public fun updatePageInfo(newInfo: PageInfo, drawBitmap: Boolean) {
+        pageInfo = newInfo
+        state = State.WITH_PAGE_INFO
         layoutStrategy.getPageInfo(layoutInfo, true, newInfo)
         dim.width = layoutInfo.x.pageDimension
         dim.height = layoutInfo.y.pageDimension
-        println("page info updated: " + newInfo.pageNum + " " + dim)
+        println("page info updated: " + newInfo.pageNum + " " + dim  + " pageInfo " + newInfo)
         pageListener?.sizeChanged(this)
+        if (drawBitmap) {
+            redraw();
+        }
+    }
 
-        addRenderTask()
+    public fun redraw() {
+        if (state == State.WITH_PAGE_INFO && bitmap == null) {
+            if (bitmap == null) {
+                bitmap = Cache.cache!!.createBitmap(dim.width, dim.height)
+            }
+            addRenderTask()
+        }
+    }
+
+    fun recalcPageInfo(){
+        if (state == State.WITH_PAGE_INFO) {
+            destroyBitmap()
+            updatePageInfo(pageInfo!!, false)
+        }
     }
 
     fun updateBitmap(b: IntBitmap) {
-        state = State.VISIBLE
         bitmap = b
         pageListener?.pageViewUpdated(this)
         if (state == State.DESTROYED) {
@@ -95,13 +115,18 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
     }
 
     fun destroy() {
-        bitmap?.destroy()
+        destroyBitmap()
         state = State.DESTROYED
+    }
+
+    fun destroyBitmap() {
+        bitmap?.destroy()
+        bitmap = null;
     }
 
 }
 
-inline fun Canvas.translate(p: Point) {
+fun Canvas.translate(p: Point) {
     this.translate(p.x.toFloat(), p.y.toFloat())
 }
 
@@ -110,8 +135,10 @@ fun PageView.addRenderTask() {
     val p = object : AsyncTask<Int, Int, IntBitmap>() {
 
         override fun doInBackground(vararg params: Int?): IntBitmap? {
+            if (pageListener == null) {
+                println("null listener " + pageNum)
+            }
             return pageListener?.renderPage(this@addRenderTask)
-            println("null listener " + pageNum)
         }
 
         override fun onPostExecute(result: IntBitmap?) {

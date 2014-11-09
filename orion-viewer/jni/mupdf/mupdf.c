@@ -636,7 +636,7 @@ JNIEXPORT jboolean JNICALL
 JNI_FN(MuPDFCore_drawPage)(JNIEnv *env, jobject thiz,
 		jintArray bitmap, jint arrayOffset,
         float zoom,
-		int pageW, int pageH, int patchX, int patchY, int patchW, int patchH)
+		int pageW, int pageH, int patchX, int patchY, int patchW, int patchH, int bitmapW)
 {
 	LOGI("==================Start Rendering==============");
 	//AndroidBitmapInfo info;
@@ -653,7 +653,7 @@ JNI_FN(MuPDFCore_drawPage)(JNIEnv *env, jobject thiz,
 	fz_context *ctx = glo->ctx;
 	fz_document *doc = glo->doc;
 	page_cache *pc = &glo->pages[glo->current];
-	int hq = (patchW < pageW || patchH < pageH);
+	int hq = 0;//(patchW < pageW || patchH < pageH);
 	fz_matrix scale;
 	int num_pixels = pageW * pageH;
 
@@ -730,11 +730,11 @@ JNI_FN(MuPDFCore_drawPage)(JNIEnv *env, jobject thiz,
 		bbox.x1 = patchX + patchW;
 		bbox.y1 = patchY + patchH;
 		pixbbox = bbox;
-		//pixbbox.x1 = pixbbox.x0 + info.width;
+		pixbbox.x1 = pixbbox.x0 + bitmapW;
 		/* pixmaps cannot handle right-edge padding, so the bbox must be expanded to
 		 * match the pixels data */
-		//pix = fz_new_pixmap_with_bbox_and_data(ctx, glo->colorspace, &pixbbox, pixels);
-		pix = fz_new_pixmap_with_bbox_and_data(ctx, glo->colorspace, &bbox, pixels);
+		pix = fz_new_pixmap_with_bbox_and_data(ctx, glo->colorspace, &pixbbox, pixels);
+		//pix = fz_new_pixmap_with_bbox_and_data(ctx, glo->colorspace, &bbox, pixels);
 		if (pc->page_list == NULL && pc->annot_list == NULL)
 		{
 			fz_clear_pixmap_with_value(ctx, pix, 0xd0);
@@ -850,7 +850,7 @@ JNI_FN(MuPDFCore_updatePageInternal)(JNIEnv *env, jobject thiz, jobject bitmap, 
 		/* Without a cached page object we cannot perform a partial update so
 		render the entire bitmap instead */
 		JNI_FN(MuPDFCore_gotoPageInternal)(env, thiz, page);
-		return JNI_FN(MuPDFCore_drawPage)(env, thiz, NULL, -1, 1.0f/*TODO*/, pageW, pageH, patchX, patchY, patchW, patchH);
+		return JNI_FN(MuPDFCore_drawPage)(env, thiz, NULL, -1, 1.0f/*TODO*/, pageW, pageH, patchX, patchY, patchW, patchH, pageW);
 	}
 
 	idoc = pdf_specifics(doc);

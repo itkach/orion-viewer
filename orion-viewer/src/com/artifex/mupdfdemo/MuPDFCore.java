@@ -43,7 +43,8 @@ public class MuPDFCore
                                  float zoom,
 			int pageW, int pageH,
 			int patchX, int patchY,
-			int patchW, int patchH);
+			int patchW, int patchH,
+			int bitmapW);
 
 
 	private native void updatePageInternal(Bitmap bitmap,
@@ -389,7 +390,7 @@ public class MuPDFCore
 		gotoPage(n);
 		Common.d("MuPDFCore starts rendering...");
 		long start = System.currentTimeMillis();
-		drawPage(bitmap.getArray(), bitmap.getOffset(), (float)zoom, w, h, left, top, w, h);
+		drawPage(bitmap.getArray(), bitmap.getOffset(), (float)zoom, w, h, left, top, w, h, bitmap.getWidth());
 		Common.d("MuPDFCore render time takes " + n + " = " + 0.001 * (System.currentTimeMillis() - start) + " s");
 	}
 

@@ -54,7 +54,7 @@ public class LazyPageViewProvider(val renderingArea: Dimension, val pageInfoProv
             return pageView
         } else {
             val pageView = PageView(pageInfo!!.pageNum, renderingArea, pagePosition, layoutStrategy)
-            pageView.updatePageInfo(pageInfo!!)
+            pageView.updatePageInfo(pageInfo!!, true)
             return pageView
         }
     }
@@ -71,7 +71,7 @@ public class PageInfoAsyncTask(val infoProvider: PageInfoProvider, val pageView:
     }
 
     override fun onPostExecute(result: PageInfo?) {
-        pageView.updatePageInfo(result!!)
+        pageView.updatePageInfo(result!!, true)
     }
 }
 

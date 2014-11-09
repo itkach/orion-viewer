@@ -31,15 +31,18 @@ public class IntBitmap(val width: Int, val height: Int, val offset: Int, val cac
 }
 
 
-public class Cache(screenSize : Dimension) {
+public class Cache private(val screenSize : Dimension) {
 
-    val array: IntArray = IntArray(screenSize.width * screenSize.height * 4)
+    val array: IntArray = IntArray(screenSize.width * screenSize.height * 5)
     val intervals = linkedListOf<IntBitmap>()
 
     val totalSize = array.size
 
     //TODO wrong cycling
-    public fun createBitmap(width: Int, height: Int): IntBitmap {
+    public fun createBitmap(requestWidth: Int, requestHeight: Int): IntBitmap {
+        val width = calcDim(requestWidth, screenSize.width)
+        val height = calcDim(requestHeight, screenSize.height)
+
         var offset = findFreeOffset(height * width)
         if (offset == -1) {
             val mutableIterator = intervals.iterator()
@@ -59,10 +62,14 @@ public class Cache(screenSize : Dimension) {
         val insertAtBegining = (intervals.first?.offset ?: 0) > offset
 
         val insertIndex = if (insertAtBegining) 0 else intervals.size
-        println("insertIndex $insertIndex offset $offset")
+        println("insertIndex $insertIndex offset $offset bitmap ${bitmap.width}x${bitmap.height}")
         intervals.add(insertIndex, bitmap)
 
         return bitmap;
+    }
+
+    fun calcDim(request: Int, screenDim: Int): Int {
+        return if (request <= 1.1 * screenDim) request else screenDim
     }
 
     private fun findFreeOffset(needBytes: Int): Int {
@@ -75,6 +82,18 @@ public class Cache(screenSize : Dimension) {
             firstOccupied - needBytes
         } else {
             -1
+        }
+    }
+
+    class object {
+
+        var cache: Cache? = null;
+
+        fun create(dim: Dimension): Cache {
+            if (cache == null) {
+                cache = Cache(dim)
+            }
+            return cache!!
         }
     }
 }
