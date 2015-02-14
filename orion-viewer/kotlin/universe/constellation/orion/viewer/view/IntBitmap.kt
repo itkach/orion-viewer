@@ -18,6 +18,7 @@ public class IntBitmap(val width: Int, val height: Int, val offset: Int, val cac
     public fun intCounts(): Int = width * height
 
     public fun Canvas.drawBitmap(x: Float, y: Float, width: Int, height: Int, paint: Paint ) {
+        println("${this@IntBitmap.width} $width")
         this.drawBitmap(cache.array, offset, this@IntBitmap.width, 0, 0, width, height, true, paint);
     }
 
@@ -26,6 +27,7 @@ public class IntBitmap(val width: Int, val height: Int, val offset: Int, val cac
     }
 
     fun destroy() {
+        println("destroy bitmap")
         isDead = true
     }
 }
@@ -62,14 +64,14 @@ public class Cache private(val screenSize : Dimension) {
         val insertAtBegining = (intervals.first?.offset ?: 0) > offset
 
         val insertIndex = if (insertAtBegining) 0 else intervals.size
-        println("insertIndex $insertIndex offset $offset bitmap ${bitmap.width}x${bitmap.height}")
+        println("Creating new bitmap with index $insertIndex offset $offset bitmap ${bitmap.width}x${bitmap.height}")
         intervals.add(insertIndex, bitmap)
 
         return bitmap;
     }
 
     fun calcDim(request: Int, screenDim: Int): Int {
-        return if (request <= 1.1 * screenDim) request else screenDim
+        return Math.min(request, (1.1 * screenDim).toInt())
     }
 
     private fun findFreeOffset(needBytes: Int): Int {
