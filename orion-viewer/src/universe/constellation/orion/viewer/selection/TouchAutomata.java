@@ -232,7 +232,7 @@ public class TouchAutomata extends TouchAutomataOldAndroid {
                             if (Device.Info.TEXET_TB176FL) {
                                 curScale *= gestureDetector.getScaleFactor();
                             }
-                            activity.getController().translateAndZoom(true, curScale, newX, newY);
+                            activity.getController().translateAndZoom(curScale, newX, newY);
                             break;
                     }
                 } else {

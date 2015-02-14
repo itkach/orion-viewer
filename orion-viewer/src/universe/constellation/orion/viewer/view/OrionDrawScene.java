@@ -137,14 +137,12 @@ public class OrionDrawScene extends View implements OrionImageView, TaskAccumula
         }
 
             for (DrawTask drawTask : tasks) {
-                Common.d("OrionView: bitmap task " );
                 drawTask.drawOnCanvas(canvas, stuff);
             }
-            Common.d("OrionView: bitmap task : end" );
 
         if (inScaling) {
             canvas.restore();
-            drawBorder(canvas, myScale, false);
+            //drawBorder(canvas, myScale, false);
         }
 
         Common.d("OrionView: bitmap rendering takes " + 0.001f * (System.currentTimeMillis() - start) + " s");

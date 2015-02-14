@@ -73,7 +73,7 @@ public class Controller implements ViewDimensionAware {
         listener = new  DocumentViewAdapter() {
             public void viewParametersChanged() {
                 if (Controller.this.activity.isResumed) {
-                    pageViewController.viewParamsChanged();
+                    pageViewController.viewParamsChanged(0);
                     Controller.this.renderer.invalidateCache();
                     drawPage(layoutInfo);
                     hasPendingEvents = false;
@@ -138,29 +138,29 @@ public class Controller implements ViewDimensionAware {
     public void drawNext() {
         layout.nextPage(layoutInfo);
         drawPage(layoutInfo);
+        pageViewController.changePage(true);
     }
 
     public void drawPrev() {
         layout.prevPage(layoutInfo);
         drawPage(layoutInfo);
+        pageViewController.changePage(false);
     }
 
-    public void translateAndZoom(boolean changeZoom, float zoomScaling, float deltaX, float deltaY) {
-        Common.d("zoomscaling  " + changeZoom + " " + zoomScaling + "  " + deltaX + "  " + deltaY );
+    public void translateAndZoom(float zoomScaling, float deltaX, float deltaY) {
+        Common.d("translateAndZoom " + zoomScaling + "  " + deltaX + "  " + deltaY );
         int oldOffsetX = layoutInfo.x.offset;
         int oldOffsetY = layoutInfo.y.offset;
         System.out.println("oldZoom  " + layoutInfo.docZoom + "  " + layoutInfo.x.offset + " x " + layoutInfo.y.offset);
 
-        if (changeZoom) {
-            layout.changeZoom((int) (10000f * zoomScaling * layoutInfo.docZoom));
-            layout.reset(layoutInfo, layoutInfo.pageNumber);
-        }
+        layout.changeZoom((int) (10000f * zoomScaling * layoutInfo.docZoom));
+        layout.reset(layoutInfo, layoutInfo.pageNumber);
 
         layoutInfo.x.offset = (int) (zoomScaling * oldOffsetX + deltaX);
         layoutInfo.y.offset = (int) (zoomScaling * oldOffsetY + deltaY);
         System.out.println("newZoom  " + layoutInfo.docZoom + "  " + layoutInfo.x.offset + " x " + layoutInfo.y.offset);
 
-        pageViewController.translatePages(-(int) deltaY);
+        pageViewController.viewParamsChanged(-(int) deltaY);
     }
 
     public void translate(float deltaX, float deltaY) {

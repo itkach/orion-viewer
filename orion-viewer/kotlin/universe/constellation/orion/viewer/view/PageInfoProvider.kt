@@ -38,22 +38,26 @@ public class PageInfoProvider(val doc: DocumentWrapper) {
     public val pageCount: Int = doc.getPageCount();
 }
 
-public class LazyPageViewProvider(val renderingArea: Dimension, val pageInfoProvider: PageInfoProvider, val layoutStrategy: SimpleLayoutStrategy) {
+public class LazyPageViewProvider(val screenArea: Dimension, val pageInfoProvider: PageInfoProvider, val layoutStrategy: SimpleLayoutStrategy) {
 
     val pageCount = pageInfoProvider.doc.getPageCount()
+    
+    val firstPage: Int = 0
+    
+    val lastPage: Int = pageCount - 1 
 
     public fun getPageView(pageNum: Int, pagePosition: Point): PageView {
         var pageInfo = pageInfoProvider.getPageInfoIfExists(pageNum)
 
         if (pageInfo == null) {
-            pageInfo = PageInfo(renderingArea.width, renderingArea.height, pageNum)
-            val pageView = PageView(pageInfo!!.pageNum, renderingArea, pagePosition, layoutStrategy)
+            pageInfo = PageInfo(screenArea.width, screenArea.height, pageNum)
+            val pageView = PageView(pageInfo!!.pageNum, screenArea, pagePosition, layoutStrategy)
 
             runAsyncTask(PageInfoAsyncTask(pageInfoProvider, pageView))
 
             return pageView
         } else {
-            val pageView = PageView(pageInfo!!.pageNum, renderingArea, pagePosition, layoutStrategy)
+            val pageView = PageView(pageInfo!!.pageNum, screenArea, pagePosition, layoutStrategy)
             pageView.updatePageInfo(pageInfo!!, true)
             return pageView
         }

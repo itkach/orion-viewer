@@ -57,6 +57,8 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
                         canvas.drawBitmap(stuffTempRect, paint)
                     }
                 }
+            } else {
+
             }
 
             paint.setStyle(Paint.Style.STROKE)
@@ -81,9 +83,8 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
         pageInfo = newInfo
         state = State.WITH_PAGE_INFO
         layoutStrategy.getPageInfo(layoutInfo, true, newInfo)
-        dim.width = layoutInfo.x.pageDimension
-        dim.height = layoutInfo.y.pageDimension
-        println("page info updated: " + newInfo.pageNum + " " + dim  + " pageInfo " + newInfo)
+        dim = Dimension(layoutInfo.x.pageDimension, layoutInfo.y.pageDimension)
+        println("page ${pageNum} info updated: pageInfo " + newInfo + " new dimension =" + dim )
         pageListener?.sizeChanged(this)
         if (drawBitmap) {
             redraw();
@@ -107,7 +108,6 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
     }
 
     fun updateBitmap(b: IntBitmap) {
-        bitmap = b
         pageListener?.pageViewUpdated(this)
         if (state == State.DESTROYED) {
             b.destroy()

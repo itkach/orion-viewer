@@ -19,11 +19,11 @@ public class PageViewController(val pageProvider: LazyPageViewProvider,
 
     val calcRect: Rect = Rect()
 
-    val screenArea = Rect(0, 0, pageProvider.renderingArea.width, pageProvider.renderingArea.height);
+    val screenArea = Rect(0, 0, pageProvider.screenArea.width, pageProvider.screenArea.height);
 
-    val renderingArea = screenArea;
+    val renderingArea = Rect(screenArea);
 
-    val bitmapCache = Cache.create(pageProvider.renderingArea)
+    val bitmapCache = Cache.create(pageProvider.screenArea)
 
     fun createPage(pageNum: Int) {
         val pageView = createPage(pageNum, Point(0, 0))
@@ -39,7 +39,7 @@ public class PageViewController(val pageProvider: LazyPageViewProvider,
             pageAccumulator.appendTask(pageView)
         } else {
             pageView.relocate(position)
-            if (!pageView.isVisible()) {
+            if (!pageView.isVisibleOrNext()) {
                 removePageView(pageView)
             }
         }
@@ -49,18 +49,20 @@ public class PageViewController(val pageProvider: LazyPageViewProvider,
             pageView.redraw()
         }
 
-        if (pageView.hasSpaceAfter() && pageView.hasNext()) {
+        println("Cached pages number ${visiblePages.size()} + ${pageView.pageArea} + ${pageView.isVisible()}")
+        if ((pageView.hasSpaceAfter() || pageView.isVisible()) && pageView.hasNext()) {
             val rect = pageView.pageArea
             createPage(pageNum + 1, Point(rect.left, rect.bottom + 1))
         }
-        println("visible pages " + visiblePages.size())
         return pageView
     }
 
-    public fun viewParamsChanged() {
-        val pageNum = anchor!!.pageNum
-        forAllPages { recalcPageInfo() }
+    public fun viewParamsChanged(yDelta: Int) {
+        val pageNum = anchor?.pageNum ?: 0
+        renderingArea.set(0, 0, pageProvider.layoutStrategy.viewWidth, pageProvider.layoutStrategy.viewHeight)
+        forAllCachedPages { recalcPageInfo() }
         createPage(pageNum)
+
     }
 
     private fun removePageView(p: PageView) {
@@ -71,8 +73,8 @@ public class PageViewController(val pageProvider: LazyPageViewProvider,
     }
 
     private fun ensureHasAnchor(p: PageView) {
-        if (!(anchor?.isVisible() ?: false)) {
-            println("reseting anchor ${anchor?.pageNum}")
+        if (!(anchor?.isVisible() ?: true)) {
+            println("Changing anchor to null: ${anchor?.pageNum}")
             anchor = null
         }
 
@@ -82,15 +84,21 @@ public class PageViewController(val pageProvider: LazyPageViewProvider,
         }
     }
 
-    inline fun forAllPages(operation: PageView.() -> Unit) {
+    inline fun forAllCachedPages(operation: PageView.() -> Unit) {
         for (i in 0..visiblePages.size() - 1) {
             val pageView = visiblePages.valueAt(i)
             pageView.operation()
         }
     }
 
+    public fun changePage(next: Boolean) {
+        translatePages((if (!next) 1 else - 1) * renderingArea.height())
+        pageAccumulator.update()
+    }
+
     fun translatePages(delta: Int) {
-        forAllPages {
+        println("translating to $delta")
+        forAllCachedPages {
             transform(0, delta)
         }
 
@@ -104,20 +112,24 @@ public class PageViewController(val pageProvider: LazyPageViewProvider,
         return calcRect.intersect(renderingArea) && !calcRect.isEmpty()
     }
 
+    fun PageView.isVisibleOrNext(): Boolean {
+        return isVisible() || visiblePages.get(pageNum - 1)?.isVisible() ?: false
+    }
+
     fun PageView.hasSpaceAfter(): Boolean {
-        return /*isVisible() &&*/ pageArea.bottom < renderingArea.bottom
+        return pageArea.bottom < renderingArea.bottom
     }
 
     fun PageView.hasSpaceBefore(): Boolean {
-        return /*isVisible() &&*/ pageArea.top > renderingArea.top
+        return pageArea.top > renderingArea.top
     }
 
     fun PageView.hasNext(): Boolean {
-        return pageNum < pageProvider.pageCount - 1
+        return pageNum < pageProvider.lastPage
     }
 
     fun PageView.hasPrev(): Boolean {
-        return pageNum > 0
+        return pageNum > pageProvider.firstPage
     }
 
     override fun pageViewUpdated(view: PageView) {

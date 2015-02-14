@@ -54,6 +54,9 @@ public class SimpleLayoutStrategy implements LayoutStrategy {
 
     public SimpleLayoutStrategy(PageInfoProvider pageInfoProvider, Point deviceSize) {
         this.pageInfoProvider = pageInfoProvider;
+        viewWidth = deviceSize.x;
+        viewHeight = deviceSize.y;
+        System.out.println("Screen size " + deviceSize);
     }
 
     public void nextPage(LayoutPosition info) {
