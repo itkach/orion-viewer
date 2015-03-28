@@ -10,10 +10,12 @@ import android.graphics.Bitmap
 import android.content.Context
 import android.test.ActivityUnitTestCase
 import android.content.Intent
+import android.test.suitebuilder.annotation.SmallTest
 import junit.framework.Assert
 import universe.constellation.orion.viewer.LayoutPosition
 import java.util.concurrent.CountDownLatch
 import universe.constellation.orion.viewer.OrionImageView
+import universe.constellation.orion.viewer.view.PageInfoProvider
 import kotlin.test.assertEquals
 import java.util.Arrays
 
@@ -89,7 +91,7 @@ class RenderingAndNavigationTest : ActivityBaseTest() {
     fun prepareEngine(): Controller {
         val doc = openTestDocument(TestUtil.SICP)
 
-        var layoutStrategy: LayoutStrategy = SimpleLayoutStrategy(doc, deviceSize)
+        var layoutStrategy: LayoutStrategy = SimpleLayoutStrategy(PageInfoProvider(doc), deviceSize)
         val renderer = SingleThreadRenderer(getActivity(), view!!, layoutStrategy, doc, Bitmap.Config.ARGB_8888)
         val controller = Controller(getActivity(), doc, layoutStrategy, renderer)
 
