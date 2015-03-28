@@ -140,17 +140,23 @@ public class PageViewController(val pageProvider: LazyPageViewProvider,
         createPage(view.pageNum, view.position)
     }
 
-    override fun renderPage(view: PageView): IntBitmap {
+    override fun renderBitmapInPage(view: PageView): IntBitmap? {
         val layoutPosition = view.layoutInfo
-        if (view.bitmap == null) {
-            view.bitmap = bitmapCache.createBitmap(layoutPosition.x.pageDimension, layoutPosition.y.pageDimension)
+        debug(this)
+        val intBitmap = view.bitmap
+        if (intBitmap != null) { //not destroyed
+            println("rendering x = ${layoutPosition.x}, y = ${layoutPosition.y}")
+            val curPos = layoutPosition
+            val width = intBitmap!!.width
+            val height = intBitmap!!.height
+            val leftTopCorner = pageProvider.layoutStrategy.convertToPoint(curPos)
+            pageProvider.pageInfoProvider.doc.renderPage(curPos.pageNumber, intBitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height)
+            debug("render" + view)
         }
-        println("rendering x = ${layoutPosition.x}, y = ${layoutPosition.y}")
-        val curPos = layoutPosition
-        val width = view.bitmap!!.width
-        val height = view.bitmap!!.height
-        val leftTopCorner = pageProvider.layoutStrategy.convertToPoint(curPos)
-        pageProvider.pageInfoProvider.doc.renderPage(curPos.pageNumber, view.bitmap, curPos.docZoom, leftTopCorner.x, leftTopCorner.y, leftTopCorner.x + width, leftTopCorner.y + height)
-        return view.bitmap!!;
+        return intBitmap;
+    }
+
+    override fun toString(): String {
+        return "Visible pages: ${visiblePages.size()}"
     }
 }

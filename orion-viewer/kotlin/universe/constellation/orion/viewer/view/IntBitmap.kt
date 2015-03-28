@@ -4,6 +4,8 @@ import universe.constellation.orion.viewer.geom.Dimension
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
+import android.os.Debug
+import universe.constellation.orion.viewer.Common
 
 
 public class IntBitmap(val width: Int, val height: Int, val offset: Int, val cache : Cache) {
@@ -16,6 +18,7 @@ public class IntBitmap(val width: Int, val height: Int, val offset: Int, val cac
         private set
 
     public fun intCounts(): Int = width * height
+    public fun byteCounts(): Int = 4 * intCounts()
 
     public fun Canvas.drawBitmap(x: Float, y: Float, width: Int, height: Int, paint: Paint ) {
         println("${this@IntBitmap.width} $width")
@@ -38,7 +41,11 @@ public class Cache private(val screenSize : Dimension) {
     val array: IntArray = IntArray(screenSize.width * screenSize.height * 5)
     val intervals = linkedListOf<IntBitmap>()
 
-    val totalSize = array.size
+    val totalSize = array.size()
+    init {
+        debug("Cache size is ${Common.memoryInMB(4 * totalSize.toLong())}")
+    }
+
 
     //TODO wrong cycling
     public fun createBitmap(requestWidth: Int, requestHeight: Int): IntBitmap {
@@ -56,18 +63,24 @@ public class Cache private(val screenSize : Dimension) {
             offset = findFreeOffset(height * width)
         }
 
+        renderState()
         if (offset == -1) {
-            throw RuntimeException("not enough memory: total memory " + array.size)
+            throw RuntimeException("Not enough memory: can't allocate ${width * height} * 4 bytes total memory is ${Common.memoryInMB(totalSize.toLong())} * 4 MB")
         }
 
         val bitmap = IntBitmap(width, height, offset, this)
-        val insertAtBegining = (intervals.first?.offset ?: 0) > offset
+        val insertAtBegining = (intervals.firstOrNull()?.offset ?: 0) > offset
 
-        val insertIndex = if (insertAtBegining) 0 else intervals.size
-        println("Creating new bitmap with index $insertIndex offset $offset bitmap ${bitmap.width}x${bitmap.height}")
+        val insertIndex = if (insertAtBegining) 0 else intervals.size()
+        debug("Creating new bitmap with index $insertIndex offset $offset bitmap ${bitmap.width}x${bitmap.height}: ${bitmap.width * bitmap.height}")
         intervals.add(insertIndex, bitmap)
 
+        debug("Allocated heap size: " + Common.memoryInMB(Debug.getNativeHeapAllocatedSize() - Debug.getNativeHeapFreeSize()))
         return bitmap;
+    }
+
+    fun renderState(){
+        debug(intervals.map { "${it.offset} -> ${it.endOffset} ${it.isDead}" }.join(""))
     }
 
     fun calcDim(request: Int, screenDim: Int): Int {
@@ -87,7 +100,7 @@ public class Cache private(val screenSize : Dimension) {
         }
     }
 
-    class object {
+    companion object {
 
         var cache: Cache? = null;
 

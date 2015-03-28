@@ -9,5 +9,5 @@ trait PageViewListener {
 
     public fun sizeChanged(view: PageView)
 
-    public fun renderPage(view: PageView): IntBitmap
+    public fun renderBitmapInPage(view: PageView): IntBitmap?
 }

@@ -22,7 +22,7 @@ enum class State {
 }
 public class PageView(val pageNum: Int, var dim: Dimension, val position: Point, val layoutStrategy: SimpleLayoutStrategy) : DrawTask {
 
-    var bitmap : IntBitmap? = null;
+    volatile var bitmap : IntBitmap? = null;
 
     var pageListener: PageViewListener? = null
 
@@ -107,10 +107,10 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
         }
     }
 
-    fun updateBitmap(b: IntBitmap) {
+    fun updateBitmap(b: IntBitmap?) {
         pageListener?.pageViewUpdated(this)
         if (state == State.DESTROYED) {
-            b.destroy()
+            b?.destroy()
         }
     }
 
@@ -120,6 +120,7 @@ public class PageView(val pageNum: Int, var dim: Dimension, val position: Point,
     }
 
     fun destroyBitmap() {
+        debug("destroyBitmap: " + this)
         bitmap?.destroy()
         bitmap = null;
     }
@@ -138,7 +139,7 @@ fun PageView.addRenderTask() {
             if (pageListener == null) {
                 println("null listener " + pageNum)
             }
-            return pageListener?.renderPage(this@addRenderTask)
+            return pageListener?.renderBitmapInPage(this@addRenderTask)
         }
 
         override fun onPostExecute(result: IntBitmap?) {
